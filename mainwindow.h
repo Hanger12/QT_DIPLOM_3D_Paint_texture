@@ -2,7 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-
+#include <mutex>
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -15,7 +15,16 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+private slots:
+    void on_actionImport_models_triggered();
+
+    void on_actionCenter_Camera_triggered();
+
+    void on_actionClear_Active_Texture_triggered();
+
 private:
     Ui::MainWindow *ui;
+    std::mutex loadingMeshMutex;
+    bool loadingMesh;
 };
 #endif // MAINWINDOW_H

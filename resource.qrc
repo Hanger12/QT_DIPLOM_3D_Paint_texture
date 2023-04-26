@@ -1,0 +1,18 @@
+<RCC>
+    <qresource prefix="/">
+        <file>paint.frag</file>
+        <file>paint.vert</file>
+        <file>grid.frag</file>
+        <file>grid.vert</file>
+        <file>default1.frag</file>
+        <file>default1.vert</file>
+        <file>axis.vert</file>
+        <file>axis.frag</file>
+        <file>texture.frag</file>
+        <file>texture.vert</file>
+    </qresource>
+    <qresource prefix="/image">
+        <file>cube.jpeg</file>
+        <file>brush1.png</file>
+    </qresource>
+</RCC>
