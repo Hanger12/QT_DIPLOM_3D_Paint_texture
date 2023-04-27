@@ -12,12 +12,12 @@
 #include <QVector>
 #include "texture.h"
 #include "utility.h"
+#include "sessionsettings.h"
 GLwidget::GLwidget(QWidget *parent)
     :QOpenGLWidget(parent),
       textureMode(TextureMode::ALBEDO),
       paintTextureWidth(2048),
       paintTextureHeight(2048),
-      paintColor(1.0,0.0,0.0),
       strokeWidth(60.0f)
 {
     m_z=-3.0f;
@@ -64,14 +64,14 @@ void GLwidget::initializeGL()
     createAttachments(1, 1);
     brushTexture = new QOpenGLTexture(QImage(QString(":/image/brush1.png")));
     {
-    material.setAlbedoMap(createTexture(paintTextureWidth, paintTextureHeight));
-    material.setMetallicMap(createTexture(paintTextureWidth, paintTextureHeight));
-    material.setRoughnessMap(createTexture(paintTextureWidth, paintTextureHeight));
-    material.setAoMap(createTexture(paintTextureWidth, paintTextureHeight));
-    material.setEmissiveMap(createTexture(paintTextureWidth, paintTextureHeight));
-    material.setDisplacementMap(createTexture(paintTextureWidth, paintTextureHeight));
+        material.setAlbedoMap(createTexture(paintTextureWidth, paintTextureHeight));
+        material.setMetallicMap(createTexture(paintTextureWidth, paintTextureHeight));
+        material.setRoughnessMap(createTexture(paintTextureWidth, paintTextureHeight));
+        material.setAoMap(createTexture(paintTextureWidth, paintTextureHeight));
+        material.setEmissiveMap(createTexture(paintTextureWidth, paintTextureHeight));
+        material.setDisplacementMap(createTexture(paintTextureWidth, paintTextureHeight));
 
-    clearAllTextures();
+        clearAllTextures();
     }
     if (!QOpenGLContext::currentContext()->functions()->hasOpenGLFeature(QOpenGLFunctions::MultipleRenderTargets)) {
         qDebug("Multiple render targets not supported");
@@ -84,7 +84,10 @@ void GLwidget::initializeGL()
 
 void GLwidget::paintGL()
 {
-
+    float r, g, b;
+    settings()->brushColor().getRgbF(&r,&g,&b);
+    paintColor = QVector3D(r,g,b);
+    strokeWidth = settings()->brushSize();
     //glBindFramebuffer(GL_FRAMEBUFFER, fbo);
     //GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
     //glDrawBuffer(GL_COLOR_ATTACHMENT0);
@@ -113,15 +116,15 @@ void GLwidget::paintGL()
         m_program.setUniformValue("uTexture2",1);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, getPaintTexture(textureMode));
-//        m_texture->bind(1);
-//        m_program.setUniformValue("uTexture2",1);
-//        m_program.setUniformValue("u_projectionMatrix",m_projectionMatrix);
-//        m_program.setUniformValue("u_modelMatrix",m_modelMatrix);
-//        m_program.setUniformValue("u_lightpower",3.0f);
-//        m_program.setUniformValue("u_lightposition",QVector4D(0.0,0.0,0.0,1.0));
-//        m_program.setUniformValue("u_viewMatrix",viewMatrix);
+        //        m_texture->bind(1);
+        //        m_program.setUniformValue("uTexture2",1);
+        //        m_program.setUniformValue("u_projectionMatrix",m_projectionMatrix);
+        //        m_program.setUniformValue("u_modelMatrix",m_modelMatrix);
+        //        m_program.setUniformValue("u_lightpower",3.0f);
+        //        m_program.setUniformValue("u_lightposition",QVector4D(0.0,0.0,0.0,1.0));
+        //        m_program.setUniformValue("u_viewMatrix",viewMatrix);
         glmesh->enableVertexAttribArrays();
-//        m_program.setUniformValue("u_linemode",false);
+        //        m_program.setUniformValue("u_linemode",false);
         glmesh->render();
     }
     m_programGrid.bind();
@@ -147,15 +150,15 @@ void GLwidget::paintGL()
     f->glBindFramebuffer(GL_DRAW_FRAMEBUFFER, defaultFramebufferObject());
     //funcs->glDrawBuffer(GL_BACK);
 
-    f->glBlitFramebuffer(0,0,Width+300,Height+200,0, 0,Width+300,Height+200, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+    f->glBlitFramebuffer(0,0,Width,Height,0, 0,Width,Height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
     std::cout<<"width="<<Width<<std::endl;
 }
 
 void GLwidget::resizeGL(int _width, int _height)
 {
-    Width = _width;
-    Height = _height;
-    createAttachments(Width+300,Height+200);
+    Width = _width+300;
+    Height = _height+200;
+    createAttachments(Width,Height);
     //    m_projectionMatrixGrid.setToIdentity();
     //    m_projectionMatrixGrid.perspective(45,aspect,0.1,20.0f);
 }
@@ -174,8 +177,10 @@ void GLwidget::mouseMoveEvent(QMouseEvent *_event)
     }
     if(_event->buttons()==Qt::LeftButton)
     {
+        QPoint currentPosQ = this->mapFromGlobal(QCursor::pos());
+        QVector2D currentPos = QVector2D(currentPosQ.x()+(currentPosQ.x()*0.25), currentPosQ.y()+(currentPosQ.y()*0.25+60));
         //QPoint currentPosQ = _event->pos();
-        mouseCoord = QVector2D(_event->position());
+        mouseCoord = currentPos;
         paint();
         update();
         //_strokePoints.append(QVector2D(_event->pos().x(), height()-_event->pos().y()));
@@ -192,13 +197,16 @@ void GLwidget::mouseMoveEvent(QMouseEvent *_event)
 
 void GLwidget::mousePressEvent(QMouseEvent *_event)
 {
-    mouseCoord = QVector2D(_event->position());
+    QPoint currentPosQ = this->mapFromGlobal(QCursor::pos());
+    QVector2D currentPos = QVector2D(currentPosQ.x()+(currentPosQ.x()*0.25), currentPosQ.y()+(currentPosQ.y()*0.25+60));
+    mouseCoord = currentPos;
     if(_event->buttons()==Qt::RightButton)
     {
         m_mousePosition= QVector2D(_event->position());
     }
     if(_event->buttons()==Qt::LeftButton)
     {
+        std::cout<<"mouseCoordX= "<<mouseCoord.x()<<" mouseCoordY= "<<mouseCoord.y()<<std::endl;
         restart = true;
         paint();
         update();
@@ -275,49 +283,49 @@ void GLwidget::initshaider()
 
 void GLwidget::initcube(float width)
 {
-//    float width_div_2=width/2.0f;
-//    QVector<vertexData> vertexes;
-//    vertexes.append(vertexData(QVector3D(-width_div_2,width_div_2,width_div_2),QVector2D(0.0,1.0),QVector3D(0.0,0.0,1.0)));
-//    vertexes.append(vertexData(QVector3D(-width_div_2,-width_div_2,width_div_2),QVector2D(0.0,0.0),QVector3D(0.0,0.0,1.0)));
-//    vertexes.append(vertexData(QVector3D(width_div_2,width_div_2,width_div_2),QVector2D(1.0,1.0),QVector3D(0.0,0.0,1.0)));
-//    vertexes.append(vertexData(QVector3D(width_div_2,-width_div_2,width_div_2),QVector2D(1.0,0.0),QVector3D(0.0,0.0,1.0)));
+    //    float width_div_2=width/2.0f;
+    //    QVector<vertexData> vertexes;
+    //    vertexes.append(vertexData(QVector3D(-width_div_2,width_div_2,width_div_2),QVector2D(0.0,1.0),QVector3D(0.0,0.0,1.0)));
+    //    vertexes.append(vertexData(QVector3D(-width_div_2,-width_div_2,width_div_2),QVector2D(0.0,0.0),QVector3D(0.0,0.0,1.0)));
+    //    vertexes.append(vertexData(QVector3D(width_div_2,width_div_2,width_div_2),QVector2D(1.0,1.0),QVector3D(0.0,0.0,1.0)));
+    //    vertexes.append(vertexData(QVector3D(width_div_2,-width_div_2,width_div_2),QVector2D(1.0,0.0),QVector3D(0.0,0.0,1.0)));
 
-//    vertexes.append(vertexData(QVector3D(width_div_2,width_div_2,width_div_2),QVector2D(0.0,1.0),QVector3D(1.0,0.0,0.0)));
-//    vertexes.append(vertexData(QVector3D(width_div_2,-width_div_2,width_div_2),QVector2D(0.0,0.0),QVector3D(1.0,0.0,0.0)));
-//    vertexes.append(vertexData(QVector3D(width_div_2,width_div_2,-width_div_2),QVector2D(1.0,1.0),QVector3D(1.0,0.0,0.0)));
-//    vertexes.append(vertexData(QVector3D(width_div_2,-width_div_2,-width_div_2),QVector2D(1.0,0.0),QVector3D(1.0,0.0,0.0)));
+    //    vertexes.append(vertexData(QVector3D(width_div_2,width_div_2,width_div_2),QVector2D(0.0,1.0),QVector3D(1.0,0.0,0.0)));
+    //    vertexes.append(vertexData(QVector3D(width_div_2,-width_div_2,width_div_2),QVector2D(0.0,0.0),QVector3D(1.0,0.0,0.0)));
+    //    vertexes.append(vertexData(QVector3D(width_div_2,width_div_2,-width_div_2),QVector2D(1.0,1.0),QVector3D(1.0,0.0,0.0)));
+    //    vertexes.append(vertexData(QVector3D(width_div_2,-width_div_2,-width_div_2),QVector2D(1.0,0.0),QVector3D(1.0,0.0,0.0)));
 
-//    vertexes.append(vertexData(QVector3D(width_div_2,width_div_2,width_div_2),QVector2D(0.0,1.0),QVector3D(0.0,1.0,0.0)));
-//    vertexes.append(vertexData(QVector3D(width_div_2,width_div_2,-width_div_2),QVector2D(0.0,0.0),QVector3D(0.0,1.0,0.0)));
-//    vertexes.append(vertexData(QVector3D(-width_div_2,width_div_2,width_div_2),QVector2D(1.0,1.0),QVector3D(0.0,1.0,0.0)));
-//    vertexes.append(vertexData(QVector3D(-width_div_2,width_div_2,-width_div_2),QVector2D(1.0,0.0),QVector3D(0.0,1.0,0.0)));
+    //    vertexes.append(vertexData(QVector3D(width_div_2,width_div_2,width_div_2),QVector2D(0.0,1.0),QVector3D(0.0,1.0,0.0)));
+    //    vertexes.append(vertexData(QVector3D(width_div_2,width_div_2,-width_div_2),QVector2D(0.0,0.0),QVector3D(0.0,1.0,0.0)));
+    //    vertexes.append(vertexData(QVector3D(-width_div_2,width_div_2,width_div_2),QVector2D(1.0,1.0),QVector3D(0.0,1.0,0.0)));
+    //    vertexes.append(vertexData(QVector3D(-width_div_2,width_div_2,-width_div_2),QVector2D(1.0,0.0),QVector3D(0.0,1.0,0.0)));
 
-//    vertexes.append(vertexData(QVector3D(width_div_2,width_div_2,-width_div_2),QVector2D(0.0,1.0),QVector3D(0.0,0.0,-1.0)));
-//    vertexes.append(vertexData(QVector3D(width_div_2,-width_div_2,-width_div_2),QVector2D(0.0,0.0),QVector3D(0.0,0.0,-1.0)));
-//    vertexes.append(vertexData(QVector3D(-width_div_2,width_div_2,-width_div_2),QVector2D(1.0,1.0),QVector3D(0.0,0.0,-1.0)));
-//    vertexes.append(vertexData(QVector3D(-width_div_2,-width_div_2,-width_div_2),QVector2D(1.0,0.0),QVector3D(0.0,0.0,-1.0)));
+    //    vertexes.append(vertexData(QVector3D(width_div_2,width_div_2,-width_div_2),QVector2D(0.0,1.0),QVector3D(0.0,0.0,-1.0)));
+    //    vertexes.append(vertexData(QVector3D(width_div_2,-width_div_2,-width_div_2),QVector2D(0.0,0.0),QVector3D(0.0,0.0,-1.0)));
+    //    vertexes.append(vertexData(QVector3D(-width_div_2,width_div_2,-width_div_2),QVector2D(1.0,1.0),QVector3D(0.0,0.0,-1.0)));
+    //    vertexes.append(vertexData(QVector3D(-width_div_2,-width_div_2,-width_div_2),QVector2D(1.0,0.0),QVector3D(0.0,0.0,-1.0)));
 
-//    vertexes.append(vertexData(QVector3D(-width_div_2,width_div_2,width_div_2),QVector2D(0.0,1.0),QVector3D(-1.0,0.0,0.0)));
-//    vertexes.append(vertexData(QVector3D(-width_div_2,width_div_2,-width_div_2),QVector2D(0.0,0.0),QVector3D(-1.0,0.0,0.0)));
-//    vertexes.append(vertexData(QVector3D(-width_div_2,-width_div_2,width_div_2),QVector2D(1.0,1.0),QVector3D(-1.0,0.0,0.0)));
-//    vertexes.append(vertexData(QVector3D(-width_div_2,-width_div_2,-width_div_2),QVector2D(1.0,0.0),QVector3D(-1.0,0.0,0.0)));
+    //    vertexes.append(vertexData(QVector3D(-width_div_2,width_div_2,width_div_2),QVector2D(0.0,1.0),QVector3D(-1.0,0.0,0.0)));
+    //    vertexes.append(vertexData(QVector3D(-width_div_2,width_div_2,-width_div_2),QVector2D(0.0,0.0),QVector3D(-1.0,0.0,0.0)));
+    //    vertexes.append(vertexData(QVector3D(-width_div_2,-width_div_2,width_div_2),QVector2D(1.0,1.0),QVector3D(-1.0,0.0,0.0)));
+    //    vertexes.append(vertexData(QVector3D(-width_div_2,-width_div_2,-width_div_2),QVector2D(1.0,0.0),QVector3D(-1.0,0.0,0.0)));
 
-//    vertexes.append(vertexData(QVector3D(-width_div_2,-width_div_2,width_div_2),QVector2D(0.0,1.0),QVector3D(0.0,-1.0,0.0)));
-//    vertexes.append(vertexData(QVector3D(-width_div_2,-width_div_2,-width_div_2),QVector2D(0.0,0.0),QVector3D(0.0,-1.0,0.0)));
-//    vertexes.append(vertexData(QVector3D(width_div_2,-width_div_2,width_div_2),QVector2D(1.0,1.0),QVector3D(0.0,-1.0,0.0)));
-//    vertexes.append(vertexData(QVector3D(width_div_2,-width_div_2,-width_div_2),QVector2D(1.0,0.0),QVector3D(0.0,-1.0,0.0)));
+    //    vertexes.append(vertexData(QVector3D(-width_div_2,-width_div_2,width_div_2),QVector2D(0.0,1.0),QVector3D(0.0,-1.0,0.0)));
+    //    vertexes.append(vertexData(QVector3D(-width_div_2,-width_div_2,-width_div_2),QVector2D(0.0,0.0),QVector3D(0.0,-1.0,0.0)));
+    //    vertexes.append(vertexData(QVector3D(width_div_2,-width_div_2,width_div_2),QVector2D(1.0,1.0),QVector3D(0.0,-1.0,0.0)));
+    //    vertexes.append(vertexData(QVector3D(width_div_2,-width_div_2,-width_div_2),QVector2D(1.0,0.0),QVector3D(0.0,-1.0,0.0)));
 
-//    QVector<GLuint> indexes;
-//    for(int i=0;i<24;i+=4)
-//    {
-//        indexes.append(i+0);
-//        indexes.append(i+1);
-//        indexes.append(i+2);
-//        indexes.append(i+2);
-//        indexes.append(i+1);
-//        indexes.append(i+3);
-//    }
-//    mesh = new Mesh(vertexes,indexes,QImage(":/image/cube.jpeg"));
+    //    QVector<GLuint> indexes;
+    //    for(int i=0;i<24;i+=4)
+    //    {
+    //        indexes.append(i+0);
+    //        indexes.append(i+1);
+    //        indexes.append(i+2);
+    //        indexes.append(i+2);
+    //        indexes.append(i+1);
+    //        indexes.append(i+3);
+    //    }
+    //    mesh = new Mesh(vertexes,indexes,QImage(":/image/cube.jpeg"));
 }
 
 void GLwidget::paint()
@@ -338,19 +346,21 @@ void GLwidget::paint()
 
     // determine the amount of points to draw into the texture
     unsigned int pointCount = std::ceil(std::sqrt(std::pow(mouseCoord.x() - prevMouseCoord.x(), 2) + std::pow(mouseCoord.y() - prevMouseCoord.y(), 2)));
-    std::cout<<"PointCount="<<pointCount<<std::endl;
+    //std::cout<<"PointCount="<<pointCount<<std::endl;
     QVector2D textureSize(paintTextureWidth, paintTextureHeight);
     QVector<QVector2D> coords;
     for (unsigned int i = 0; i < pointCount; ++i)
     {
         double t = static_cast<double>(i) / static_cast<double>(pointCount);
         QVector2D coord = prevMouseCoord * (1.0 - t) + mouseCoord * t;
+        //std::cout<<"coordX= "<<coord.x()<<" coordY= "<<coord.y()<<std::endl;
+        //std::cout<<"mouseCoordX= "<<mouseCoord.x()<<" mouseCoordY= "<<mouseCoord.y()<<std::endl;
         QVector4D data;
-        glReadPixels(static_cast<GLint>(coord.x()+90), static_cast<GLint>(Height+130-coord.y()), 1, 1, GL_RGBA, GL_FLOAT, &data);
+        glReadPixels(GLint(coord.x()),GLint(Height-coord.y()), 1, 1, GL_RGBA, GL_FLOAT, &data);
         // a coordinate is only valid if marked by the fragment shader in the previous draw pass
         if (data.y() > 0.0)
         {
-
+            std::cout<<"dataX= "<<data.x()<<" dataY= "<<data.y()<<std::endl;
             coords.push_back(data.toVector2D());
         }
     }
@@ -384,8 +394,8 @@ void GLwidget::paint()
     for (QVector2D &paintCoord : coords)
     {
         QMatrix4x4 transform;
-        transform.translate(QVector3D(paintCoord * 2.0 - QVector2D(1.0, 1.0), 0.0));
-        transform.scale(QVector3D((1.0 / static_cast<double>(paintTextureWidth)) * static_cast<double>(strokeWidth), (1.0 / static_cast<double>(paintTextureHeight)) * static_cast<double>(strokeWidth), 1.0));
+        transform.translate(QVector3D(paintCoord*2.0 - QVector2D(1.0, 1.0), 0.0));
+        transform.scale(QVector3D((1.0 / static_cast<double>(paintTextureWidth)) * static_cast<int>(strokeWidth), (1.0 / static_cast<double>(paintTextureHeight)) * static_cast<int>(strokeWidth), 1.0));
         m_programPaint.setUniformValue("uTransformation",transform);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
     }
@@ -393,7 +403,7 @@ void GLwidget::paint()
     // reset state to default
     glDisable(GL_BLEND);
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-    glViewport(0, 0, Width, Height);
+    glViewport(0, 0, width(), height());
 }
 
 void GLwidget::drawBrush()
@@ -619,12 +629,12 @@ void GLwidget::clearActiveTexture(const QVector3D &_clearColor)
     glClearColor(0.2f,0.2f,0.2f,0);
 }
 
-void GLwidget::setPaintColor(const QVector3D &_paintColor)
-{
-    paintColor = _paintColor;
-}
-
 QVector3D GLwidget::getPaintColor() const
 {
     return paintColor;
+}
+
+float GLwidget::getStrokeWidth() const
+{
+    return strokeWidth;
 }

@@ -22,6 +22,10 @@ private slots:
 
     void on_actionClear_Active_Texture_triggered();
 
+    void on_actionSet_Paint_triggered();
+
+    void on_actionSet_Stroke_Width_triggered();
+
 private:
     Ui::MainWindow *ui;
     std::mutex loadingMeshMutex;

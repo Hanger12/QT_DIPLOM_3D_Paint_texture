@@ -104,8 +104,16 @@
     <addaction name="actionCenter_Camera"/>
     <addaction name="actionClear_Active_Texture"/>
    </widget>
+   <widget class="QMenu" name="menuEdit">
+    <property name="title">
+     <string>Edit</string>
+    </property>
+    <addaction name="actionSet_Paint"/>
+    <addaction name="actionSet_Stroke_Width"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuView"/>
+   <addaction name="menuEdit"/>
   </widget>
   <widget class="QToolBar" name="toolBar">
    <property name="windowTitle">
@@ -131,6 +139,16 @@
   <action name="actionClear_Active_Texture">
    <property name="text">
     <string>Clear Active Texture</string>
+   </property>
+  </action>
+  <action name="actionSet_Paint">
+   <property name="text">
+    <string>Set Paint</string>
+   </property>
+  </action>
+  <action name="actionSet_Stroke_Width">
+   <property name="text">
+    <string>Set Stroke Width</string>
    </property>
   </action>
  </widget>

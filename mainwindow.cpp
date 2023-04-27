@@ -8,6 +8,8 @@
 #include "objloader.h"
 #include <qtimer.h>
 #include <QColorDialog>
+#include "sessionsettings.h"
+#include <QInputDialog>
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow),loadingMesh(false)
@@ -106,5 +108,28 @@ void MainWindow::on_actionClear_Active_Texture_triggered()
             ui->openGLWidget->update();
         }
     }
+}
+
+
+void MainWindow::on_actionSet_Paint_triggered()
+{
+    QVector3D prevColor = ui->openGLWidget->getPaintColor() * 255.0f; // QColor uses 0 - 255
+    QColorDialog colorDialog({ int(prevColor.x()), int(prevColor.y()), int(prevColor.z() )}, this);
+    if (colorDialog.exec())
+    {
+        QColor qcolor = colorDialog.currentColor();
+        float r, g, b;
+        qcolor.getRgbF(&r, &g, &b);
+        settings()->setBrushColor(qcolor);
+        ui->openGLWidget->update();
+    }
+}
+
+
+void MainWindow::on_actionSet_Stroke_Width_triggered()
+{
+    int result = QInputDialog::getInt(this, tr("Set Stroke Width"), tr("Set Stroke Width"), ui->openGLWidget->getStrokeWidth(), 1, 256);
+    settings()->setBrushSize(result);
+    ui->openGLWidget->update();
 }
 

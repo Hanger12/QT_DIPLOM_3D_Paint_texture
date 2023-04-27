@@ -45,8 +45,8 @@ public:
     void setMesh(const IndexedMesh &_mesh);
     void clearActiveTexture(const QVector3D &_clearColor);
     Material *getMaterial();
-    void setPaintColor(const QVector3D &_paintColor);
     QVector3D getPaintColor() const;
+    float getStrokeWidth() const;
 protected:
     void initializeGL() override;
     void paintGL() override;
@@ -79,7 +79,7 @@ private:
     QVector3D paintColor;
     QVector2D mouseCoord;
     QVector2D prevMouseCoord;
-    float strokeWidth;
+    int strokeWidth;
     bool restart;
     float uvZoom;
 

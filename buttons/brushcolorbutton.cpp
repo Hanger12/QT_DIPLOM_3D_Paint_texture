@@ -6,7 +6,7 @@
 #include <QColorDialog>
 
 #include "sessionsettings.h"
-
+#include "glwidget.h"
 BrushColorButton::BrushColorButton(QWidget *parent) : LabeledToolButton(parent)
 {
     connect(this, SIGNAL(released()), this, SLOT(onButtonClicked()));
