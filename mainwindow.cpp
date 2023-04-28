@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "aboutprogramwidjet.h"
 #include "ui_mainwindow.h"
 #include <QVector3D>
 #include<QFileDialog>
@@ -15,6 +16,18 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow),loadingMesh(false)
 {
     ui->setupUi(this);
+    viewModeGroup = new QActionGroup(this);
+    viewModeGroup->addAction(ui->actionDefault_View);
+    viewModeGroup->addAction(ui->actionTexture_View);
+    viewModeGroup->addAction(ui->actionUV_View);
+    viewModeGroup->addAction(ui->actionRender_View);
+//    textureModeGroup = new QActionGroup(this);
+//    textureModeGroup->addAction(actionActivateAlbedoTexture);
+//    textureModeGroup->addAction(actionActivateMetallicTexture);
+//    textureModeGroup->addAction(actionActivateRoughnessTexture);
+//    textureModeGroup->addAction(actionActivateAmbientOcclusionTexture);
+//    textureModeGroup->addAction(actionActivateEmissiveTexture);
+//    textureModeGroup->addAction(actionActivateDisplacementTexture);
 }
 
 MainWindow::~MainWindow()
@@ -84,7 +97,7 @@ void MainWindow::on_actionImport_models_triggered()
 
 void MainWindow::on_actionCenter_Camera_triggered()
 {
-    ui->openGLWidget->centercamera(QVector3D(0.0,0.0,-3.0));
+    ui->openGLWidget->centercamera(QVector3D(0.0,0.0,-6.0));
 }
 
 
@@ -131,5 +144,60 @@ void MainWindow::on_actionSet_Stroke_Width_triggered()
     int result = QInputDialog::getInt(this, tr("Set Stroke Width"), tr("Set Stroke Width"), ui->openGLWidget->getStrokeWidth(), 1, 256);
     settings()->setBrushSize(result);
     ui->openGLWidget->update();
+}
+
+
+void MainWindow::on_actionToggle_Wireframe_toggled(bool arg1)
+{
+    ui->openGLWidget->toggleWireframe(arg1);
+    ui->openGLWidget->update();
+}
+
+
+void MainWindow::on_actionDefault_View_toggled(bool arg1)
+{
+    if (arg1)
+    {
+        ui->openGLWidget->setViewMode(ViewMode::DEFAULT);
+        ui->openGLWidget->update();
+    }
+}
+
+
+void MainWindow::on_actionTexture_View_toggled(bool arg1)
+{
+    if (arg1)
+    {
+        ui->openGLWidget->setViewMode(ViewMode::TEXTURE);
+        ui->openGLWidget->update();
+    }
+}
+
+
+
+void MainWindow::on_actionAbou_Program_triggered()
+{
+    AboutProgramWidjet* widjet=new AboutProgramWidjet(this);
+    widjet->show();
+}
+
+
+void MainWindow::on_actionUV_View_toggled(bool arg1)
+{
+    if (arg1)
+    {
+        ui->openGLWidget->setViewMode(ViewMode::UV);
+        ui->openGLWidget->update();
+    }
+}
+
+
+void MainWindow::on_actionRender_View_toggled(bool arg1)
+{
+    if (arg1)
+    {
+        ui->openGLWidget->setViewMode(ViewMode::RENDER);
+        ui->openGLWidget->update();
+    }
 }
 

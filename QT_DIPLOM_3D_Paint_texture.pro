@@ -9,6 +9,7 @@ LIBS+=-lopengl32 -lglu32
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    aboutprogramwidjet.cpp \
     axis.cpp \
     buttons/brushcolorbutton.cpp \
     buttons/brushsizebutton.cpp \
@@ -27,6 +28,7 @@ SOURCES += \
     utility.cpp
 
 HEADERS += \
+    aboutprogramwidjet.h \
     axis.h \
     buttons/brushcolorbutton.h \
     buttons/brushsizebutton.h \
@@ -47,6 +49,7 @@ HEADERS += \
     utility.h
 
 FORMS += \
+    aboutprogramwidjet.ui \
     mainwindow.ui
 
 TRANSLATIONS += \
@@ -63,6 +66,10 @@ RESOURCES += \
     resource.qrc
 
 DISTFILES += \
+    Render.frag \
+    Render.vert \
+    UVview.frag \
+    UVview.vert \
     axis.frag \
     axis.vert \
     brush1.png \

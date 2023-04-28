@@ -102,18 +102,32 @@
      <string>View</string>
     </property>
     <addaction name="actionCenter_Camera"/>
-    <addaction name="actionClear_Active_Texture"/>
+    <addaction name="separator"/>
+    <addaction name="actionToggle_Wireframe"/>
+    <addaction name="separator"/>
+    <addaction name="actionDefault_View"/>
+    <addaction name="actionTexture_View"/>
+    <addaction name="actionUV_View"/>
+    <addaction name="actionRender_View"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
      <string>Edit</string>
     </property>
+    <addaction name="actionClear_Active_Texture"/>
     <addaction name="actionSet_Paint"/>
     <addaction name="actionSet_Stroke_Width"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actionAbou_Program"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuView"/>
    <addaction name="menuEdit"/>
+   <addaction name="menuHelp"/>
   </widget>
   <widget class="QToolBar" name="toolBar">
    <property name="windowTitle">
@@ -149,6 +163,54 @@
   <action name="actionSet_Stroke_Width">
    <property name="text">
     <string>Set Stroke Width</string>
+   </property>
+  </action>
+  <action name="actionToggle_Wireframe">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Toggle Wireframe</string>
+   </property>
+  </action>
+  <action name="actionDefault_View">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Default View</string>
+   </property>
+  </action>
+  <action name="actionTexture_View">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Texture View</string>
+   </property>
+  </action>
+  <action name="actionAbou_Program">
+   <property name="text">
+    <string>About Program</string>
+   </property>
+  </action>
+  <action name="actionUV_View">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>UV View</string>
+   </property>
+  </action>
+  <action name="actionRender_View">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Render View</string>
    </property>
   </action>
  </widget>

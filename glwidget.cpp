@@ -12,15 +12,21 @@
 #include <QVector>
 #include "texture.h"
 #include "utility.h"
+#include <QMatrix3x3>
+#include <QGenericMatrix>
 #include "sessionsettings.h"
 GLwidget::GLwidget(QWidget *parent)
     :QOpenGLWidget(parent),
       textureMode(TextureMode::ALBEDO),
+      wireframe(false),
+      viewMode(ViewMode::DEFAULT),
       paintTextureWidth(2048),
       paintTextureHeight(2048),
-      strokeWidth(60.0f)
+      strokeWidth(60.0f),
+      uvZoom(1.0f),
+      uvTranslate(0.0, 1.0)
 {
-    m_z=-3.0f;
+    m_z=-6.0;
     m_x=0.0f;
     m_y=0.0f;
 }
@@ -109,47 +115,149 @@ void GLwidget::paintGL()
     //    viewMatrix.rotate(m_rotation);
     if (glmesh)
     {
-        m_program.bind();
-        m_program.setUniformValue("uModelViewProjection",m_projectionMatrix*viewMatrix);
-        m_texture->bind(0);
-        m_program.setUniformValue("uTexture",0);
-        m_program.setUniformValue("uTexture2",1);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, getPaintTexture(textureMode));
-        //        m_texture->bind(1);
-        //        m_program.setUniformValue("uTexture2",1);
-        //        m_program.setUniformValue("u_projectionMatrix",m_projectionMatrix);
-        //        m_program.setUniformValue("u_modelMatrix",m_modelMatrix);
-        //        m_program.setUniformValue("u_lightpower",3.0f);
-        //        m_program.setUniformValue("u_lightposition",QVector4D(0.0,0.0,0.0,1.0));
-        //        m_program.setUniformValue("u_viewMatrix",viewMatrix);
-        glmesh->enableVertexAttribArrays();
-        //        m_program.setUniformValue("u_linemode",false);
-        glmesh->render();
+        switch (viewMode)
+        {
+        case ViewMode::DEFAULT:
+        {
+            m_program.bind();
+            m_program.setUniformValue("u_projectionMatrix",m_projectionMatrix);
+            m_program.setUniformValue("u_modelMatrix",m_modelMatrix);
+            m_program.setUniformValue("u_lightpower",3.0f);
+            m_program.setUniformValue("u_lightposition",QVector4D(0.0,0.0,0.0,1.0));
+            m_program.setUniformValue("u_viewMatrix",viewMatrix);
+            glmesh->enableVertexAttribArrays();
+            m_program.setUniformValue("u_linemode",false);
+            glmesh->render();
+            if (wireframe)
+            {
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                m_program.setUniformValue("u_linemode",true);
+                glmesh->render();
+                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            }
+            break;
+        }
+        case ViewMode::TEXTURE:
+        {
+            m_programTexture.bind();
+            m_programTexture.setUniformValue("uModelViewProjection",m_projectionMatrix*viewMatrix);
+            m_texture->bind(0);
+            m_programTexture.setUniformValue("uTexture",0);
+            m_programTexture.setUniformValue("uTexture2",1);
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, getPaintTexture(textureMode));
+            glmesh->enableVertexAttribArrays();
+            glmesh->render();
+            break;
+        }
+        case ViewMode::UV:
+        {
+            m_programUV.bind();
+            scale(0, 0) = uvZoom;
+            scale(0, 1) = 0.0f;
+            scale(0, 2) = 0.0f;
+            scale(1, 0) = 0.0f;
+            scale(1, 1) = uvZoom;
+            scale(1, 2) = 0.0f;
+            scale(2, 0) = 0.0f;
+            scale(2, 1) = 0.0f;
+            scale(2, 2) = 1.0;
+
+            translate(0, 0) = 1.0f;
+            translate(0, 1) = 0.0f;
+            translate(0, 2) = uvTranslate.x();
+            translate(1, 0) = 0.0f;
+            translate(1, 1) = 1.0f;
+            translate(1, 2) = 1.0-uvTranslate.y();
+            translate(2, 0) = -0.0199004;
+            translate(2, 1) = -0.47363;
+            translate(2, 2) = 1.0f;
+            m_programUV.setUniformValue("uTransformation",translate*scale);
+            m_programUV.setUniformValue("uTexture",0);
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, getPaintTexture(textureMode));
+            glmesh->enableVertexAttribArrays();
+            m_programUV.setUniformValue("uGridMode",false);
+            glmesh->render();
+            if (wireframe)
+            {
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                m_programUV.setUniformValue("uGridMode",true);
+                glmesh->render();
+                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            }
+            break;
+        }
+        case ViewMode::RENDER:
+        {
+            m_programRender.bind();
+            m_programRender.setUniformValue("uModelViewProjectionMatrix",m_projectionMatrix*viewMatrix);
+            m_programRender.setUniformValue("uModelMatrix",m_modelMatrix);
+            m_programRender.setUniformValue("uAtlasData",QVector4D(1.0f, 1.0f, 0.0f, 0.0f));
+            m_programRender.setUniformValue("uMaterial.albedo",material.getAlbedo());
+            m_programRender.setUniformValue("uMaterial.metallic",material.getMetallic());
+            m_programRender.setUniformValue("uMaterial.roughness",material.getRoughness());
+            m_programRender.setUniformValue("uMaterial.emissive",material.getEmissive());
+            m_programRender.setUniformValue("uMaterial.mapBitField",material.getMapBitField());
+            m_programRender.setUniformValue("uLightColor",QVector3D(0.0f, 1.0f, 0.0f));
+            m_programRender.setUniformValue("uLightDirection",QVector3D(1.0f, 1.0f, -1.0f));
+            m_programRender.setUniformValue("uCamPos",QVector3D(0.0,0.0,3.0));
+            m_programRender.setUniformValue("albedoMap",0);
+            m_programRender.setUniformValue("metallicMap",2);
+            m_programRender.setUniformValue("roughnessMap",3);
+            m_programRender.setUniformValue("aoMap",4);
+            m_programRender.setUniformValue("emissiveMap",5);
+            m_programRender.setUniformValue("uDisplacementMap",6);
+            material.bindTextures();
+            glmesh->enableVertexAttribArrays();
+            glmesh->render();
+            //m_programRender.setUniformValue("uMaterial",);
+//            renderShader->bind();
+
+//            uModelViewProjectionMatrixR.set(projection * camera->getViewMatrix());
+//            uModelMatrixR.set(glm::mat4());
+//            uAtlasDataR.set(glm::vec4(1.0f, 1.0f, 0.0f, 0.0f));
+//            uMaterialR.set(&material);
+//            uLightColorR.set(glm::vec3(1.0f));
+//            uLightDirectionR.set(glm::normalize(glm::vec3(1.0f, 1.0f, -1.0f)));
+//            uCamPosR.set(camera->getPosition());
+//            albedoMapR.set(0);
+//            metallicMapR.set(2);
+//            roughnessMapR.set(3);
+//            aoMapR.set(4);
+//            emissiveMapR.set(5);
+//            uDisplacementMapR.set(6);
+//            //uIrradianceMapR.set(7);
+//            //uPrefilterMapR.set(8);
+//            uBrdfLUTR.set(7);
+
+//            material.bindTextures();
+
+//            funcs->glActiveTexture(GL_TEXTURE7);
+//            funcs->glBindTexture(irradianceTexture->getTarget(), irradianceTexture->getId());
+//            funcs->glActiveTexture(GL_TEXTURE8);
+//            funcs->glBindTexture(reflectanceTexture->getTarget(), reflectanceTexture->getId());
+//            funcs->glActiveTexture(GL_TEXTURE9);
+//            funcs->glBindTexture(GL_TEXTURE_2D, brdfLUT->getId());
+
+//            mesh->enableVertexAttribArrays();
+//            mesh->render();
+//            break;
+            break;
+        }
+
+        }
     }
-    m_programGrid.bind();
-    m_programGrid.setUniformValue("uModelViewProjection",m_projectionMatrix*viewMatrix);
-    grid->drawgrid();
-    //m_programGrid.setUniformValue("",);
-    Axis->DrawAxis();
-    //m_program.setUniformValue("u_lightpower",1.0f);
-    //    m_programGrid.bind();
-    //    m_programGrid.setUniformValue("uModelViewProjection",m_projectionMatrix*viewMatrix);
-    //    m_program.bind();
-    //    m_program.setUniformValue("uModelViewProjection",m_projectionMatrix*viewMatrix);
-    //    m_program.setUniformValue("uModel",m_modelMatrix);
-    //    m_program.setUniformValue("u_lightpower",5.0f);
-    //    m_program.setUniformValue("uLightDir",QVector4D(0.0,0.0,0.0,1.0));
-    //mesh->drawMesh(&m_program,func);
-    //mesh->drawMeshForPainting(&m_programGrid,func);
-    //glReadBuffer(GL_COLOR_ATTACHMENT0);
-    //glBindFramebuffer(GL_DRAW_FRAMEBUFFER, defaultFramebufferObject());
-    //funcs->glDrawBuffer(GL_BACK);
+    if (viewMode != ViewMode::UV)
+    {
+        m_programGrid.bind();
+        m_programGrid.setUniformValue("uModelViewProjection",m_projectionMatrix*viewMatrix);
+        grid->drawgrid();
+        Axis->DrawAxis();
+    }
     f->glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
     f->glReadBuffer(GL_COLOR_ATTACHMENT0);
     f->glBindFramebuffer(GL_DRAW_FRAMEBUFFER, defaultFramebufferObject());
-    //funcs->glDrawBuffer(GL_BACK);
-
     f->glBlitFramebuffer(0,0,Width,Height,0, 0,Width,Height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
     std::cout<<"width="<<Width<<std::endl;
 }
@@ -165,17 +273,25 @@ void GLwidget::resizeGL(int _width, int _height)
 
 void GLwidget::mouseMoveEvent(QMouseEvent *_event)
 {
-
+    QVector2D diff =QVector2D(_event->position())-m_mousePosition;
+    m_mousePosition = QVector2D(_event->position());
     if(_event->buttons()==Qt::RightButton)
     {
-        QVector2D diff =QVector2D(_event->position())-m_mousePosition;
-        m_mousePosition = QVector2D(_event->position());
-        float angle = diff.length()/2.0;
-        QVector3D axis= QVector3D(diff.y(),diff.x(),0.0);
-        m_rotation = QQuaternion::fromAxisAndAngle(axis,angle)*m_rotation;
-        update();
+        if (viewMode != ViewMode::UV)
+        {
+            float angle = diff.length()/2.0;
+            QVector3D axis= QVector3D(diff.y(),diff.x(),0.0);
+            m_rotation = QQuaternion::fromAxisAndAngle(axis,angle)*m_rotation;
+            update();
+        }
+        else
+        {
+            uvTranslate += diff/(float)Width;
+            std::cout<<"uvTranslateX ="<<uvTranslate.x()<<"uvTranslateY ="<<uvTranslate.y()<<std::endl;
+            update();
+        }
     }
-    if(_event->buttons()==Qt::LeftButton)
+    if(_event->buttons()==Qt::LeftButton&&viewMode!=ViewMode::DEFAULT)
     {
         QPoint currentPosQ = this->mapFromGlobal(QCursor::pos());
         QVector2D currentPos = QVector2D(currentPosQ.x()+(currentPosQ.x()*0.25), currentPosQ.y()+(currentPosQ.y()*0.25+60));
@@ -187,11 +303,14 @@ void GLwidget::mouseMoveEvent(QMouseEvent *_event)
     }
     if(_event->buttons()==Qt::MiddleButton)
     {
-        QVector2D diff_tr =QVector2D(_event->position())-m_mousePosition;
-        m_mousePosition = QVector2D(_event->position());
-        m_x += diff_tr.x()/160;
-        m_y -= diff_tr.y()/160;
-        update();
+        if (viewMode != ViewMode::UV)
+        {
+            QVector2D diff_tr =QVector2D(_event->position())-m_mousePosition;
+            m_mousePosition = QVector2D(_event->position());
+            m_x += diff_tr.x()/160;
+            m_y -= diff_tr.y()/160;
+            update();
+        }
     }
 }
 
@@ -204,9 +323,8 @@ void GLwidget::mousePressEvent(QMouseEvent *_event)
     {
         m_mousePosition= QVector2D(_event->position());
     }
-    if(_event->buttons()==Qt::LeftButton)
+    if(_event->buttons()==Qt::LeftButton&&viewMode!=ViewMode::DEFAULT)
     {
-        std::cout<<"mouseCoordX= "<<mouseCoord.x()<<" mouseCoordY= "<<mouseCoord.y()<<std::endl;
         restart = true;
         paint();
         update();
@@ -215,21 +333,33 @@ void GLwidget::mousePressEvent(QMouseEvent *_event)
     }
     if(_event->buttons()==Qt::MiddleButton)
     {
-        m_mousePosition= QVector2D(_event->position());
+        if(viewMode!=ViewMode::UV)
+        {
+            m_mousePosition= QVector2D(_event->position());
+        }
     }
     _event->accept();
 }
 
 void GLwidget::wheelEvent(QWheelEvent *_event)
 {
-    if(_event->angleDelta().y()>0)
+    if (viewMode != ViewMode::UV)
     {
-        m_z+=0.25;
-    }else if(_event->angleDelta().y()<0)
-    {
-        m_z-=0.25;
+        if(_event->angleDelta().y()>0)
+        {
+            m_z+=0.25;
+        }else if(_event->angleDelta().y()<0)
+        {
+            m_z-=0.25;
+        }
+        update();
     }
-    update();
+    else
+    {
+        const float SCROLL_DELTA_MULT = 0.001f;
+        uvZoom += _event->angleDelta().y() * SCROLL_DELTA_MULT;
+        update();
+    }
 }
 
 void GLwidget::initshaider()
@@ -254,19 +384,64 @@ void GLwidget::initshaider()
         std::cout<<"ERROR::/paint.frag"<<std::endl;
         close();
     }
-    if(!m_program.addShaderFromSourceFile(QOpenGLShader::Vertex,":/texture.vert"))
+    if(!m_program.addShaderFromSourceFile(QOpenGLShader::Vertex,":/default1.vert"))
     {
         std::cout<<"ERROR::/default1.vert"<<std::endl;
         close();
     }
-    if(!m_program.addShaderFromSourceFile(QOpenGLShader::Fragment,":/texture.frag"))
+    if(!m_program.addShaderFromSourceFile(QOpenGLShader::Fragment,":/default1.frag"))
     {
-        std::cout<<"ERROR::/defoult1.frag"<<std::endl;
+        std::cout<<"ERROR::/default1.frag"<<std::endl;
+        close();
+    }
+    if(!m_programTexture.addShaderFromSourceFile(QOpenGLShader::Vertex,":/texture.vert"))
+    {
+        std::cout<<"ERROR::/texture.vert"<<std::endl;
+        close();
+    }
+    if(!m_programTexture.addShaderFromSourceFile(QOpenGLShader::Fragment,":/texture.frag"))
+    {
+        std::cout<<"ERROR::/texture.frag"<<std::endl;
+        close();
+    }
+    if(!m_programUV.addShaderFromSourceFile(QOpenGLShader::Vertex,":/UVview.vert"))
+    {
+        std::cout<<"ERROR::/UVview.vert"<<std::endl;
+        close();
+    }
+    if(!m_programUV.addShaderFromSourceFile(QOpenGLShader::Fragment,":/UVview.frag"))
+    {
+        std::cout<<"ERROR::/UVview.frag"<<std::endl;
+        close();
+    }
+    if(!m_programUV.link())
+    {
+        std::cout<<"ERROR:UVview"<<std::endl;
+        close();
+    }
+    if(!m_programRender.addShaderFromSourceFile(QOpenGLShader::Vertex,":/Render.vert"))
+    {
+        std::cout<<"ERROR::/Render.vert"<<std::endl;
+        close();
+    }
+    if(!m_programRender.addShaderFromSourceFile(QOpenGLShader::Fragment,":/Render.frag"))
+    {
+        std::cout<<"ERROR::/Render.frag"<<std::endl;
+        close();
+    }
+    if(!m_programRender.link())
+    {
+        std::cout<<"ERROR:Render"<<std::endl;
         close();
     }
     if(!m_program.link())
     {
         std::cout<<"ERROR:defoult1"<<std::endl;
+        close();
+    }
+    if(!m_programTexture.link())
+    {
+        std::cout<<"ERROR:texture"<<std::endl;
         close();
     }
     if(!m_programPaint.link())
@@ -360,7 +535,6 @@ void GLwidget::paint()
         // a coordinate is only valid if marked by the fragment shader in the previous draw pass
         if (data.y() > 0.0)
         {
-            std::cout<<"dataX= "<<data.x()<<" dataY= "<<data.y()<<std::endl;
             coords.push_back(data.toVector2D());
         }
     }
@@ -604,6 +778,9 @@ void GLwidget::centercamera(const QVector3D setcenter)
     m_x=setcenter.x();
     m_y=setcenter.y();
     m_z=setcenter.z();
+    uvZoom=1.0;
+    uvTranslate=QVector2D(0.0,1.0);
+    m_rotation = QQuaternion(1,QVector3D(0.0,0.0,0.0));
     update();
 }
 
@@ -615,6 +792,16 @@ void GLwidget::setMesh(const IndexedMesh &_mesh)
     glmesh.reset();
 
     glmesh = GLMesh::createMesh(_mesh);
+}
+
+void GLwidget::toggleWireframe(bool _enabled)
+{
+    wireframe = _enabled;
+}
+
+void GLwidget::setViewMode(ViewMode _viewMode)
+{
+    viewMode = _viewMode;
 }
 
 void GLwidget::clearActiveTexture(const QVector3D &_clearColor)

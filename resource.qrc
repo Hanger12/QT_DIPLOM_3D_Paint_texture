@@ -10,9 +10,14 @@
         <file>axis.frag</file>
         <file>texture.frag</file>
         <file>texture.vert</file>
+        <file>UVview.frag</file>
+        <file>UVview.vert</file>
+        <file>Render.frag</file>
+        <file>Render.vert</file>
     </qresource>
     <qresource prefix="/image">
         <file>cube.jpeg</file>
         <file>brush1.png</file>
+        <file>free-icon-3d-421003.png</file>
     </qresource>
 </RCC>

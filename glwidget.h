@@ -4,6 +4,7 @@
 #include <QOpenGLWidget>
 #include <QObject>
 #include <QMatrix4x4>
+#include <QMatrix3x3>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLTexture>
 #include <QOpenGLBuffer>
@@ -43,6 +44,9 @@ public:
     ~GLwidget();
     void centercamera(const QVector3D setcenter);
     void setMesh(const IndexedMesh &_mesh);
+    void toggleWireframe(bool _enabled);
+    void setViewMode(ViewMode _viewMode);
+    void setTextureMode(TextureMode _textureMode);
     void clearActiveTexture(const QVector3D &_clearColor);
     Material *getMaterial();
     QVector3D getPaintColor() const;
@@ -63,6 +67,8 @@ protected:
 private:
     QOpenGLFunctions_3_3_Core *func;
     TextureMode textureMode;
+    bool wireframe;
+    ViewMode viewMode;
     // fbo and associated texture handles
     GLuint fbo;
     QOpenGLFramebufferObject *sourceFBO;
@@ -83,6 +89,9 @@ private:
     bool restart;
     float uvZoom;
 
+    QMatrix3x3 scale;
+    QMatrix3x3 translate;
+
     QVector2D uvTranslate;
     QList<QVector2D> _strokePoints;
     QMatrix4x4 m_projectionMatrix;
@@ -91,6 +100,9 @@ private:
     QOpenGLShaderProgram m_program;
     QOpenGLShaderProgram m_programGrid;
     QOpenGLShaderProgram m_programPaint;
+    QOpenGLShaderProgram m_programTexture;
+    QOpenGLShaderProgram m_programUV;
+    QOpenGLShaderProgram m_programRender;
     QVector2D m_mousePosition;
     QQuaternion m_rotation;
     std::shared_ptr<GLMesh> glmesh;
