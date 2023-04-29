@@ -3,11 +3,15 @@
 #include <map>
 #include <memory>
 #include "glfunctions.h"
-
+namespace gli
+{
+    class texture;
+}
 class Texture
 {
 public:
     static std::shared_ptr<Texture> createTexture(GLuint _id, GLenum _target);
+    static std::shared_ptr<Texture> createTexture(const std::string &_filename, bool _instantLoading = false);
     static void setAnisotropicFilteringAll(float _anisotropicFiltering);
 
     Texture(const Texture &) = delete;
@@ -17,6 +21,7 @@ public:
     ~Texture();
     GLuint getId() const;
     GLenum getTarget() const;
+    void setAnisotropicFiltering(float _anisotropicFiltering);
 
 private:
     static std::map<std::string, std::weak_ptr<Texture>> textureMap;
@@ -28,4 +33,7 @@ private:
 
 
     explicit Texture(GLuint _id, GLenum _target);
+    explicit Texture(const std::string &_filename, bool _instantLoading = false);
+    void initOpenGL(const gli::texture &_file);
+    void initOpenGLFromData(unsigned char *_stbiData, int _width, int _height, int _channels);
 };

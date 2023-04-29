@@ -82,6 +82,21 @@ void GLwidget::initializeGL()
     if (!QOpenGLContext::currentContext()->functions()->hasOpenGLFeature(QOpenGLFunctions::MultipleRenderTargets)) {
         qDebug("Multiple render targets not supported");
     }
+    irradianceTexture = Texture::createTexture("D:/Project/QT_Diplom_3D_Paint/QT_DIPLOM_3D_Paint_texture/Textures/irradiance.dds");
+    reflectanceTexture = Texture::createTexture("D:/Project/QT_Diplom_3D_Paint/QT_DIPLOM_3D_Paint_texture/Textures/reflectance.dds");
+    brdfLUT = Texture::createTexture("D:/Project/QT_Diplom_3D_Paint/QT_DIPLOM_3D_Paint_texture/Textures/brdf.dds");
+
+    // bind IBL textures
+    {
+        glActiveTexture(GL_TEXTURE7);
+        glBindTexture(irradianceTexture->getTarget(), irradianceTexture->getId());
+        glActiveTexture(GL_TEXTURE8);
+        glBindTexture(reflectanceTexture->getTarget(), reflectanceTexture->getId());
+        glActiveTexture(GL_TEXTURE9);
+        glBindTexture(GL_TEXTURE_2D, brdfLUT->getId());
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    }
     m_texture = new QOpenGLTexture(QImage(":/image/cube.jpeg").mirrored());
     m_texture->setMinificationFilter(QOpenGLTexture::Nearest);
     m_texture->setMagnificationFilter(QOpenGLTexture::Linear);
@@ -190,25 +205,38 @@ void GLwidget::paintGL()
         }
         case ViewMode::RENDER:
         {
+            QVector3D cameraDirection = -viewMatrix.column(2).toVector3D();
+            QVector3D cameraPos = QVector3D(m_x,m_y,m_z)+cameraDirection;
+            QVector3D cameraPosition(9.0, 0.0, 0.0);
             m_programRender.bind();
             m_programRender.setUniformValue("uModelViewProjectionMatrix",m_projectionMatrix*viewMatrix);
             m_programRender.setUniformValue("uModelMatrix",m_modelMatrix);
-            m_programRender.setUniformValue("uAtlasData",QVector4D(1.0f, 1.0f, 0.0f, 0.0f));
+            m_programRender.setUniformValue("uAtlasData",QVector4D(1.0f, 1.0f,0.0f, 0.0f));
             m_programRender.setUniformValue("uMaterial.albedo",material.getAlbedo());
             m_programRender.setUniformValue("uMaterial.metallic",material.getMetallic());
             m_programRender.setUniformValue("uMaterial.roughness",material.getRoughness());
             m_programRender.setUniformValue("uMaterial.emissive",material.getEmissive());
             m_programRender.setUniformValue("uMaterial.mapBitField",material.getMapBitField());
-            m_programRender.setUniformValue("uLightColor",QVector3D(0.0f, 1.0f, 0.0f));
-            m_programRender.setUniformValue("uLightDirection",QVector3D(1.0f, 1.0f, -1.0f));
-            m_programRender.setUniformValue("uCamPos",QVector3D(0.0,0.0,3.0));
+            m_programRender.setUniformValue("uLightColor",QVector3D(0.0,1.0f,0.0));
+            m_programRender.setUniformValue("uLightDirection",QVector3D(0,0,0));
+            //qDebug()<<"xyz= "<<m_x<<" "<<m_y<<" "<<m_z;
+            m_programRender.setUniformValue("uCamPos",cameraPos);
             m_programRender.setUniformValue("albedoMap",0);
             m_programRender.setUniformValue("metallicMap",2);
             m_programRender.setUniformValue("roughnessMap",3);
             m_programRender.setUniformValue("aoMap",4);
             m_programRender.setUniformValue("emissiveMap",5);
             m_programRender.setUniformValue("uDisplacementMap",6);
+            m_programRender.setUniformValue("uIrradianceMap",7);
+            m_programRender.setUniformValue("uPrefilterMap",8);
+            m_programRender.setUniformValue("uBrdfLUT",9);
             material.bindTextures();
+//            glActiveTexture(GL_TEXTURE7);
+//            glBindTexture(irradianceTexture->getTarget(), irradianceTexture->getId());
+//            glActiveTexture(GL_TEXTURE8);
+//            glBindTexture(reflectanceTexture->getTarget(), reflectanceTexture->getId());
+            glActiveTexture(GL_TEXTURE9);
+            glBindTexture(GL_TEXTURE_2D, brdfLUT->getId());
             glmesh->enableVertexAttribArrays();
             glmesh->render();
             //m_programRender.setUniformValue("uMaterial",);
@@ -275,10 +303,11 @@ void GLwidget::mouseMoveEvent(QMouseEvent *_event)
 {
     QVector2D diff =QVector2D(_event->position())-m_mousePosition;
     m_mousePosition = QVector2D(_event->position());
+    qDebug()<<"m_mousePosition2= "<<m_mousePosition;
     if(_event->buttons()==Qt::RightButton)
     {
         if (viewMode != ViewMode::UV)
-        {
+        { 
             float angle = diff.length()/2.0;
             QVector3D axis= QVector3D(diff.y(),diff.x(),0.0);
             m_rotation = QQuaternion::fromAxisAndAngle(axis,angle)*m_rotation;
@@ -301,16 +330,16 @@ void GLwidget::mouseMoveEvent(QMouseEvent *_event)
         update();
         //_strokePoints.append(QVector2D(_event->pos().x(), height()-_event->pos().y()));
     }
-    if(_event->buttons()==Qt::MiddleButton)
+    if(_event->buttons()==Qt::MiddleButton&&viewMode != ViewMode::UV)
     {
-        if (viewMode != ViewMode::UV)
-        {
-            QVector2D diff_tr =QVector2D(_event->position())-m_mousePosition;
-            m_mousePosition = QVector2D(_event->position());
-            m_x += diff_tr.x()/160;
-            m_y -= diff_tr.y()/160;
-            update();
-        }
+        qDebug()<<"двигается средня кнопка мыши";
+        m_x += diff.x()/160;
+        m_y -= diff.y()/160;
+        qDebug()<<"X= "<<m_x;
+        qDebug()<<"Y= "<<m_y;
+        qDebug()<<"diff= "<<diff;
+        update();
+
     }
 }
 
@@ -331,12 +360,11 @@ void GLwidget::mousePressEvent(QMouseEvent *_event)
         //_strokePoints.append(QVector2D(_event->pos().x(), height()-_event->pos().y()));
         //_strokePoints.append(QVector2D(_event->pos().x(), height()-_event->pos().y()));
     }
-    if(_event->buttons()==Qt::MiddleButton)
+    if(_event->buttons()==Qt::MiddleButton&&viewMode!=ViewMode::UV)
     {
-        if(viewMode!=ViewMode::UV)
-        {
-            m_mousePosition= QVector2D(_event->position());
-        }
+        qDebug()<<"нажата средня кнопка мыши";
+        m_mousePosition= QVector2D(_event->position());
+        qDebug()<<"m_mousePosition= "<<m_mousePosition;
     }
     _event->accept();
 }
@@ -549,7 +577,7 @@ void GLwidget::paint()
     }
     else
     {
-        m_programPaint.setUniformValue("uColor",paintColor);
+        m_programPaint.setUniformValue("uColor",paintColor.dotProduct(paintColor,QVector3D(0.2126f, 0.7152f, 0.0722f)));
     }
 
     // bind the paint fbo and the current texture

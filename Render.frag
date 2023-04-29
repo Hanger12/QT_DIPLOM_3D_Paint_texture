@@ -23,7 +23,7 @@ struct Material
     vec4 albedo;
     float metallic;
     float roughness;
-    vec3 emissive;
+        vec3 emissive;
     int mapBitField;
 };
 
@@ -34,8 +34,8 @@ uniform sampler2D roughnessMap;
 uniform sampler2D aoMap;
 uniform sampler2D emissiveMap;
 uniform sampler2D uDisplacementMap;
-uniform samplerCube uIrradianceMap;
-uniform samplerCube uPrefilterMap;
+//uniform samplerCube uIrradianceMap;
+//uniform samplerCube uPrefilterMap;
 uniform sampler2D uBrdfLUT;
 
 uniform Material uMaterial;
@@ -220,7 +220,7 @@ void main()
         emissive = uMaterial.emissive;
     }
 
-        vec3 V = normalize(uCamPos - vWorldPos.xyz);
+        vec3 V = normalize(uCamPos - vWorldPos);
         float NdotV = max(dot(N, V), 0.0);
         vec3 F0 = mix(vec3(0.04), albedo.rgb, metallic);
 
@@ -251,16 +251,16 @@ void main()
         kD = 1.0 - kS;
         kD *= 1.0 - metallic;
 
-        vec3 irradiance = texture(uIrradianceMap, N).rgb;
-        vec3 diffuse = irradiance * albedo.rgb;
-
+        //vec3 irradiance = texture(uIrradianceMap, N).rgb;
+        //vec3 diffuse = irradiance * albedo.rgb;
+        vec3 diffuse =  albedo.rgb;
         // sample both the pre-filter map and the BRDF lut and combine them together as per the Split-Sum approximation to get the IBL specular part.
         const float MAX_REFLECTION_LOD = 4.0;
-        vec3 prefilteredColor = textureLod(uPrefilterMap, reflect(-V, N), roughness * MAX_REFLECTION_LOD).rgb;
+        //vec3 prefilteredColor = textureLod(uPrefilterMap, reflect(-V, N), roughness * MAX_REFLECTION_LOD).rgb;
 
         vec2 brdf  = textureLod(uBrdfLUT, vec2(NdotV, roughness), 0.0).rg;
-        specular = prefilteredColor * (kS * brdf.x + brdf.y);
-
+        //specular = prefilteredColor * (kS * brdf.x + brdf.y);
+        specular = (kS * brdf.x + brdf.y);
         vec3 ambientLightContribution = vec3((kD * diffuse + specular) * ao);
 
         oFragColor = vec4(directionalLightContribution + ambientLightContribution + emissive, albedo.a);
@@ -268,7 +268,6 @@ void main()
         oFragColor.rgb = uncharted2Tonemap(oFragColor.rgb * 8.0);
         vec3 whiteScale = 1.0/uncharted2Tonemap(W);
         oFragColor.rgb *= whiteScale;
-
 
     // gamma correct
     oFragColor.rgb = pow(oFragColor.rgb, vec3(1.0/2.2));

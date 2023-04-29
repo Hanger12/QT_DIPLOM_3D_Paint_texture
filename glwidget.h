@@ -15,6 +15,7 @@
 #include <QQuaternion>
 #include <QList>
 #include <vector>
+#include <memory>
 #include <QOpenGLFunctions_3_3_Core>
 #include<QOpenGLExtraFunctions>
 #include <QOpenGLFramebufferObject>
@@ -120,6 +121,10 @@ private:
     QOpenGLTexture * m_texture;
     QOpenGLExtraFunctions* f;
     Material material;
+
+    std::shared_ptr<Texture> irradianceTexture;
+    std::shared_ptr<Texture> reflectanceTexture;
+    std::shared_ptr<Texture> brdfLUT;
 };
 
 
