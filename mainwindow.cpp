@@ -21,10 +21,10 @@ MainWindow::MainWindow(QWidget *parent)
     viewModeGroup->addAction(ui->actionTexture_View);
     viewModeGroup->addAction(ui->actionUV_View);
     viewModeGroup->addAction(ui->actionRender_View);
-//    textureModeGroup = new QActionGroup(this);
-//    textureModeGroup->addAction(actionActivateAlbedoTexture);
-//    textureModeGroup->addAction(actionActivateMetallicTexture);
-//    textureModeGroup->addAction(actionActivateRoughnessTexture);
+    textureModeGroup = new QActionGroup(this);
+    textureModeGroup->addAction(ui->actionAlbedo_Texture);
+    textureModeGroup->addAction(ui->actionMetallic_Texture);
+    textureModeGroup->addAction(ui->actionRoughness_Texture);
 //    textureModeGroup->addAction(actionActivateAmbientOcclusionTexture);
 //    textureModeGroup->addAction(actionActivateEmissiveTexture);
 //    textureModeGroup->addAction(actionActivateDisplacementTexture);
@@ -197,6 +197,67 @@ void MainWindow::on_actionRender_View_toggled(bool arg1)
     if (arg1)
     {
         ui->openGLWidget->setViewMode(ViewMode::RENDER);
+        ui->openGLWidget->update();
+    }
+}
+
+
+void MainWindow::on_actionAlbedo_Texture_toggled(bool arg1)
+{
+    if (arg1)
+    {
+        ui->openGLWidget->setTextureMode(TextureMode::ALBEDO);
+        ui->openGLWidget->update();
+    }
+}
+
+
+void MainWindow::on_actionMetallic_Texture_toggled(bool arg1)
+{
+    if (arg1)
+    {
+        ui->openGLWidget->setTextureMode(TextureMode::METALLIC);
+        ui->openGLWidget->update();
+    }
+}
+
+
+void MainWindow::on_actionRoughness_Texture_toggled(bool arg1)
+{
+    if (arg1)
+    {
+        ui->openGLWidget->setTextureMode(TextureMode::ROUGHNESS);
+        ui->openGLWidget->update();
+    }
+}
+
+
+void MainWindow::on_actionClear_All_Textures_triggered()
+{
+    QMessageBox msgBox;
+    msgBox.setWindowTitle("Clear All Textures");
+    msgBox.setText("Are you sure you want to clear all textures and reset them to default values?");
+    msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
+    msgBox.setDefaultButton(QMessageBox::Yes);
+
+    if (msgBox.exec() == QMessageBox::Yes)
+    {
+        ui->openGLWidget->clearAllTextures();
+        ui->openGLWidget->update();
+    }
+}
+
+
+void MainWindow::on_actionSet_Emissive_Color_triggered()
+{
+    QVector3D prevColor = ui->openGLWidget->getMaterial()->getEmissive() * 255.0f;
+    QColorDialog colorDialog({ int(prevColor.r), int(prevColor.g), int(prevColor.b) }, this);
+    if (colorDialog.exec())
+    {
+        QColor qcolor = colorDialog.currentColor();
+        float r, g, b;
+        qcolor.getRgbF(&r, &g, &b);
+        ui->openGLWidget->getMaterial()->setEmissive({ r, g, b });
         ui->openGLWidget->update();
     }
 }

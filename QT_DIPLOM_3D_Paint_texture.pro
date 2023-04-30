@@ -10,10 +10,12 @@ LIBS+=-lopengl32 -lglu32
 
 SOURCES += \
     aboutprogramwidjet.cpp \
+    arcballcameracontroller.cpp \
     axis.cpp \
     buttons/brushcolorbutton.cpp \
     buttons/brushsizebutton.cpp \
     buttons/labeledtoolbutton.cpp \
+    camera.cpp \
     glfunctions.cpp \
     glmesh.cpp \
     glwidget.cpp \
@@ -32,10 +34,12 @@ SOURCES += \
 
 HEADERS += \
     aboutprogramwidjet.h \
+    arcballcameracontroller.h \
     axis.h \
     buttons/brushcolorbutton.h \
     buttons/brushsizebutton.h \
     buttons/labeledtoolbutton.h \
+    camera.h \
     glfunctions.h \
     gli/clear.hpp \
     gli/comparison.hpp \

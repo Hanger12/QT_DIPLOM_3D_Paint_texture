@@ -114,9 +114,21 @@
     <property name="title">
      <string>Edit</string>
     </property>
+    <widget class="QMenu" name="menuActive_Texture">
+     <property name="title">
+      <string>Active Texture</string>
+     </property>
+     <addaction name="actionAlbedo_Texture"/>
+     <addaction name="actionMetallic_Texture"/>
+     <addaction name="actionRoughness_Texture"/>
+    </widget>
+    <addaction name="separator"/>
     <addaction name="actionClear_Active_Texture"/>
     <addaction name="actionSet_Paint"/>
     <addaction name="actionSet_Stroke_Width"/>
+    <addaction name="menuActive_Texture"/>
+    <addaction name="actionClear_All_Textures"/>
+    <addaction name="actionSet_Emissive_Color"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -211,6 +223,43 @@
    </property>
    <property name="text">
     <string>Render View</string>
+   </property>
+  </action>
+  <action name="actionAlbedo_Texture">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Albedo Texture</string>
+   </property>
+  </action>
+  <action name="actionMetallic_Texture">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Metallic Texture</string>
+   </property>
+  </action>
+  <action name="actionRoughness_Texture">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Roughness Texture</string>
+   </property>
+  </action>
+  <action name="actionClear_All_Textures">
+   <property name="text">
+    <string>Clear All Textures</string>
+   </property>
+  </action>
+  <action name="actionSet_Emissive_Color">
+   <property name="text">
+    <string>Set Emissive Color</string>
    </property>
   </action>
  </widget>

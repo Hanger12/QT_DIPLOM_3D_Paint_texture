@@ -19,11 +19,14 @@
 #include <QOpenGLFunctions_3_3_Core>
 #include<QOpenGLExtraFunctions>
 #include <QOpenGLFramebufferObject>
+
 #include "glmesh.h"
 #include "axis.h"
 #include "grid.h"
 #include "material.h"
 #include "guadandtriangle.h"
+
+#include "arcballcameracontroller.h"
 #define PAINT_FBO_WIDTH 2048
 
 
@@ -49,6 +52,7 @@ public:
     void setViewMode(ViewMode _viewMode);
     void setTextureMode(TextureMode _textureMode);
     void clearActiveTexture(const QVector3D &_clearColor);
+    void clearAllTextures();
     Material *getMaterial();
     QVector3D getPaintColor() const;
     float getStrokeWidth() const;
@@ -62,7 +66,6 @@ protected:
     void initshaider();
     void initcube(float width);
     void drawBrush();
-    void clearAllTextures();
     QOpenGLFramebufferObject* PaintFBO();
     QOpenGLFramebufferObject* _paintFbo = 0;
 private:
@@ -80,7 +83,8 @@ private:
     GLuint paintFbo;
     int Width;
     int Height;
-
+    std::shared_ptr<Camera> camera;
+    ArcBallCameraController cameraController;
     GLuint paintTextureWidth;
     GLuint paintTextureHeight;
     QVector3D paintColor;

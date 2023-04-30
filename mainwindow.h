@@ -40,6 +40,16 @@ private slots:
 
     void on_actionRender_View_toggled(bool arg1);
 
+    void on_actionAlbedo_Texture_toggled(bool arg1);
+
+    void on_actionMetallic_Texture_toggled(bool arg1);
+
+    void on_actionRoughness_Texture_toggled(bool arg1);
+
+    void on_actionClear_All_Textures_triggered();
+
+    void on_actionSet_Emissive_Color_triggered();
+
 private:
     Ui::MainWindow *ui;
     std::mutex loadingMeshMutex;

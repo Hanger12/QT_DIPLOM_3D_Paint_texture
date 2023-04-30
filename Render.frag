@@ -34,8 +34,8 @@ uniform sampler2D roughnessMap;
 uniform sampler2D aoMap;
 uniform sampler2D emissiveMap;
 uniform sampler2D uDisplacementMap;
-//uniform samplerCube uIrradianceMap;
-//uniform samplerCube uPrefilterMap;
+uniform samplerCube uIrradianceMap;
+uniform samplerCube uPrefilterMap;
 uniform sampler2D uBrdfLUT;
 
 uniform Material uMaterial;
@@ -251,16 +251,16 @@ void main()
         kD = 1.0 - kS;
         kD *= 1.0 - metallic;
 
-        //vec3 irradiance = texture(uIrradianceMap, N).rgb;
-        //vec3 diffuse = irradiance * albedo.rgb;
-        vec3 diffuse =  albedo.rgb;
+        vec3 irradiance = texture(uIrradianceMap, N).rgb;
+        vec3 diffuse = irradiance * albedo.rgb;
+        //vec3 diffuse =  albedo.rgb;
         // sample both the pre-filter map and the BRDF lut and combine them together as per the Split-Sum approximation to get the IBL specular part.
         const float MAX_REFLECTION_LOD = 4.0;
-        //vec3 prefilteredColor = textureLod(uPrefilterMap, reflect(-V, N), roughness * MAX_REFLECTION_LOD).rgb;
+        vec3 prefilteredColor = textureLod(uPrefilterMap, reflect(-V, N), roughness * MAX_REFLECTION_LOD).rgb;
 
         vec2 brdf  = textureLod(uBrdfLUT, vec2(NdotV, roughness), 0.0).rg;
-        //specular = prefilteredColor * (kS * brdf.x + brdf.y);
-        specular = (kS * brdf.x + brdf.y);
+        specular = prefilteredColor * (kS * brdf.x + brdf.y);
+        //specular = (kS * brdf.x + brdf.y);
         vec3 ambientLightContribution = vec3((kD * diffuse + specular) * ao);
 
         oFragColor = vec4(directionalLightContribution + ambientLightContribution + emissive, albedo.a);

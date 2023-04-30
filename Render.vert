@@ -20,7 +20,7 @@ void main()
 
     vNormal = mat3(uModelMatrix) * aNormal;
     vec4 pos  = uModelMatrix * vec4(aPosition, 1.0);
-    vWorldPos = pos.xyz;
+    vWorldPos = pos.xyz/ pos.w;;
 
     gl_Position = uModelViewProjectionMatrix * vec4(aPosition, 1.0);
 }

@@ -20,6 +20,8 @@ GLwidget::GLwidget(QWidget *parent)
       textureMode(TextureMode::ALBEDO),
       wireframe(false),
       viewMode(ViewMode::DEFAULT),
+      camera(new Camera()),
+      cameraController(camera, QVector3D(0.0f,0.0f,0.0f), 5.0f),
       paintTextureWidth(2048),
       paintTextureHeight(2048),
       strokeWidth(60.0f),
@@ -150,6 +152,7 @@ void GLwidget::paintGL()
                 glmesh->render();
                 glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             }
+            m_program.release();
             break;
         }
         case ViewMode::TEXTURE:
@@ -163,6 +166,7 @@ void GLwidget::paintGL()
             glBindTexture(GL_TEXTURE_2D, getPaintTexture(textureMode));
             glmesh->enableVertexAttribArrays();
             glmesh->render();
+            m_programTexture.release();
             break;
         }
         case ViewMode::UV:
@@ -201,15 +205,13 @@ void GLwidget::paintGL()
                 glmesh->render();
                 glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             }
+            m_programUV.release();
             break;
         }
         case ViewMode::RENDER:
         {
-            QVector3D cameraDirection = -viewMatrix.column(2).toVector3D();
-            QVector3D cameraPos = QVector3D(m_x,m_y,m_z)+cameraDirection;
-            QVector3D cameraPosition(9.0, 0.0, 0.0);
             m_programRender.bind();
-            m_programRender.setUniformValue("uModelViewProjectionMatrix",m_projectionMatrix*viewMatrix);
+            m_programRender.setUniformValue("uModelViewProjectionMatrix",m_projectionMatrix*camera->getViewMatrix());
             m_programRender.setUniformValue("uModelMatrix",m_modelMatrix);
             m_programRender.setUniformValue("uAtlasData",QVector4D(1.0f, 1.0f,0.0f, 0.0f));
             m_programRender.setUniformValue("uMaterial.albedo",material.getAlbedo());
@@ -217,10 +219,9 @@ void GLwidget::paintGL()
             m_programRender.setUniformValue("uMaterial.roughness",material.getRoughness());
             m_programRender.setUniformValue("uMaterial.emissive",material.getEmissive());
             m_programRender.setUniformValue("uMaterial.mapBitField",material.getMapBitField());
-            m_programRender.setUniformValue("uLightColor",QVector3D(0.0,1.0f,0.0));
-            m_programRender.setUniformValue("uLightDirection",QVector3D(0,0,0));
-            //qDebug()<<"xyz= "<<m_x<<" "<<m_y<<" "<<m_z;
-            m_programRender.setUniformValue("uCamPos",cameraPos);
+            m_programRender.setUniformValue("uLightColor",QVector3D(1.0,1.0f,1.0));
+            m_programRender.setUniformValue("uLightDirection",QVector3D(1.0f, 1.0f, -1.0f).normalized());
+            m_programRender.setUniformValue("uCamPos",camera->getPosition());
             m_programRender.setUniformValue("albedoMap",0);
             m_programRender.setUniformValue("metallicMap",2);
             m_programRender.setUniformValue("roughnessMap",3);
@@ -231,52 +232,21 @@ void GLwidget::paintGL()
             m_programRender.setUniformValue("uPrefilterMap",8);
             m_programRender.setUniformValue("uBrdfLUT",9);
             material.bindTextures();
-//            glActiveTexture(GL_TEXTURE7);
-//            glBindTexture(irradianceTexture->getTarget(), irradianceTexture->getId());
-//            glActiveTexture(GL_TEXTURE8);
-//            glBindTexture(reflectanceTexture->getTarget(), reflectanceTexture->getId());
+            glActiveTexture(GL_TEXTURE7);
+            glBindTexture(irradianceTexture->getTarget(), irradianceTexture->getId());
+            glActiveTexture(GL_TEXTURE8);
+            glBindTexture(reflectanceTexture->getTarget(), reflectanceTexture->getId());
             glActiveTexture(GL_TEXTURE9);
             glBindTexture(GL_TEXTURE_2D, brdfLUT->getId());
             glmesh->enableVertexAttribArrays();
             glmesh->render();
-            //m_programRender.setUniformValue("uMaterial",);
-//            renderShader->bind();
-
-//            uModelViewProjectionMatrixR.set(projection * camera->getViewMatrix());
-//            uModelMatrixR.set(glm::mat4());
-//            uAtlasDataR.set(glm::vec4(1.0f, 1.0f, 0.0f, 0.0f));
-//            uMaterialR.set(&material);
-//            uLightColorR.set(glm::vec3(1.0f));
-//            uLightDirectionR.set(glm::normalize(glm::vec3(1.0f, 1.0f, -1.0f)));
-//            uCamPosR.set(camera->getPosition());
-//            albedoMapR.set(0);
-//            metallicMapR.set(2);
-//            roughnessMapR.set(3);
-//            aoMapR.set(4);
-//            emissiveMapR.set(5);
-//            uDisplacementMapR.set(6);
-//            //uIrradianceMapR.set(7);
-//            //uPrefilterMapR.set(8);
-//            uBrdfLUTR.set(7);
-
-//            material.bindTextures();
-
-//            funcs->glActiveTexture(GL_TEXTURE7);
-//            funcs->glBindTexture(irradianceTexture->getTarget(), irradianceTexture->getId());
-//            funcs->glActiveTexture(GL_TEXTURE8);
-//            funcs->glBindTexture(reflectanceTexture->getTarget(), reflectanceTexture->getId());
-//            funcs->glActiveTexture(GL_TEXTURE9);
-//            funcs->glBindTexture(GL_TEXTURE_2D, brdfLUT->getId());
-
-//            mesh->enableVertexAttribArrays();
-//            mesh->render();
-//            break;
+            m_programRender.release();
             break;
         }
 
         }
     }
-    if (viewMode != ViewMode::UV)
+    if (viewMode != ViewMode::UV&&viewMode != ViewMode::RENDER)
     {
         m_programGrid.bind();
         m_programGrid.setUniformValue("uModelViewProjection",m_projectionMatrix*viewMatrix);
@@ -287,7 +257,6 @@ void GLwidget::paintGL()
     f->glReadBuffer(GL_COLOR_ATTACHMENT0);
     f->glBindFramebuffer(GL_DRAW_FRAMEBUFFER, defaultFramebufferObject());
     f->glBlitFramebuffer(0,0,Width,Height,0, 0,Width,Height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-    std::cout<<"width="<<Width<<std::endl;
 }
 
 void GLwidget::resizeGL(int _width, int _height)
@@ -303,20 +272,26 @@ void GLwidget::mouseMoveEvent(QMouseEvent *_event)
 {
     QVector2D diff =QVector2D(_event->position())-m_mousePosition;
     m_mousePosition = QVector2D(_event->position());
-    qDebug()<<"m_mousePosition2= "<<m_mousePosition;
     if(_event->buttons()==Qt::RightButton)
     {
         if (viewMode != ViewMode::UV)
-        { 
-            float angle = diff.length()/2.0;
-            QVector3D axis= QVector3D(diff.y(),diff.x(),0.0);
-            m_rotation = QQuaternion::fromAxisAndAngle(axis,angle)*m_rotation;
-            update();
+        {
+            if(viewMode != ViewMode::RENDER)
+            {
+                float angle = diff.length()/2.0;
+                QVector3D axis= QVector3D(diff.y(),diff.x(),0.0);
+                m_rotation = QQuaternion::fromAxisAndAngle(axis,angle)*m_rotation;
+                update();
+            }
+            else
+            {
+                cameraController.update(diff, 0.0f, false);
+                update();
+            }
         }
         else
         {
             uvTranslate += diff/(float)Width;
-            std::cout<<"uvTranslateX ="<<uvTranslate.x()<<"uvTranslateY ="<<uvTranslate.y()<<std::endl;
             update();
         }
     }
@@ -332,14 +307,18 @@ void GLwidget::mouseMoveEvent(QMouseEvent *_event)
     }
     if(_event->buttons()==Qt::MiddleButton&&viewMode != ViewMode::UV)
     {
-        qDebug()<<"двигается средня кнопка мыши";
-        m_x += diff.x()/160;
-        m_y -= diff.y()/160;
-        qDebug()<<"X= "<<m_x;
-        qDebug()<<"Y= "<<m_y;
-        qDebug()<<"diff= "<<diff;
-        update();
+        if(viewMode != ViewMode::RENDER)
+        {
 
+            m_x += diff.x()/160;
+            m_y -= diff.y()/160;
+            update();
+        }
+        else
+        {
+            cameraController.update(diff, 0.0f, true);
+            update();
+        }
     }
 }
 
@@ -362,9 +341,7 @@ void GLwidget::mousePressEvent(QMouseEvent *_event)
     }
     if(_event->buttons()==Qt::MiddleButton&&viewMode!=ViewMode::UV)
     {
-        qDebug()<<"нажата средня кнопка мыши";
         m_mousePosition= QVector2D(_event->position());
-        qDebug()<<"m_mousePosition= "<<m_mousePosition;
     }
     _event->accept();
 }
@@ -373,14 +350,23 @@ void GLwidget::wheelEvent(QWheelEvent *_event)
 {
     if (viewMode != ViewMode::UV)
     {
-        if(_event->angleDelta().y()>0)
+        if(viewMode == ViewMode::RENDER)
         {
-            m_z+=0.25;
-        }else if(_event->angleDelta().y()<0)
-        {
-            m_z-=0.25;
+            cameraController.update(QVector2D(0.0f,0.0f), _event->angleDelta().y(), false);
+            update();
         }
-        update();
+        else
+        {
+            if(_event->angleDelta().y()>0)
+            {
+                m_z+=0.25;
+            }else if(_event->angleDelta().y()<0)
+            {
+                m_z-=0.25;
+            }
+            update();
+        }
+
     }
     else
     {
@@ -653,46 +639,47 @@ void GLwidget::clearAllTextures()
     // albedo
     {
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, material.getAlbedoMap()->getId(), 0);
-        glClearColor(1.0,1.0,1.0,0.0);
+        glClearColor(1.0f,1.0f,1.0f,1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
     }
 
     // metallic
     {
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, material.getMetallicMap()->getId(), 0);
-        glClearColor(.2,.2,.2,0);
+        glClearColor(0.0f,0.0f,0.0f,1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
     }
 
     // roughness
     {
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, material.getRoughnessMap()->getId(), 0);
-        glClearColor(.2,.2,.2,0);
+        glClearColor(0.0f,0.0f,0.0f,1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
     }
 
     // ao
     {
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, material.getAoMap()->getId(), 0);
-        glClearColor(.2,.2,.2,0);
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
     }
 
     // emissive
     {
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, material.getEmissiveMap()->getId(), 0);
-        glClearColor(.2,.2,.2,0);
+        glClearColor(0.0f,0.0f,0.0f,1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
     }
 
     // displacement
     {
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, material.getDisplacementMap()->getId(), 0);
-        glClearColor(.2,.2,.2,0);
+        glClearColor(0.0f,0.0f,0.0f,1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glClearColor(0.2f,0.2f,0.2f,0);
 }
 
 QOpenGLFramebufferObject *GLwidget::PaintFBO()
@@ -809,6 +796,7 @@ void GLwidget::centercamera(const QVector3D setcenter)
     uvZoom=1.0;
     uvTranslate=QVector2D(0.0,1.0);
     m_rotation = QQuaternion(1,QVector3D(0.0,0.0,0.0));
+    cameraController.centerCamera();
     update();
 }
 
@@ -830,6 +818,11 @@ void GLwidget::toggleWireframe(bool _enabled)
 void GLwidget::setViewMode(ViewMode _viewMode)
 {
     viewMode = _viewMode;
+}
+
+void GLwidget::setTextureMode(TextureMode _textureMode)
+{
+    textureMode = _textureMode;
 }
 
 void GLwidget::clearActiveTexture(const QVector3D &_clearColor)
