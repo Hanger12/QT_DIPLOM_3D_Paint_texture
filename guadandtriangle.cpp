@@ -58,3 +58,9 @@ void guadAndtriangle::quadEnable()
     func->glBindVertexArray(quadVAO);
     func->glEnableVertexAttribArray(0);
 }
+
+void guadAndtriangle::triangleEnable()
+{
+    func->glBindVertexArray(triangleVAO);
+    func->glEnableVertexAttribArray(0);
+}

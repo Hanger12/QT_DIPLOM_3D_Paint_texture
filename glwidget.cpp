@@ -159,10 +159,8 @@ void GLwidget::paintGL()
         {
             m_programTexture.bind();
             m_programTexture.setUniformValue("uModelViewProjection",m_projectionMatrix*viewMatrix);
-            m_texture->bind(0);
             m_programTexture.setUniformValue("uTexture",0);
-            m_programTexture.setUniformValue("uTexture2",1);
-            glActiveTexture(GL_TEXTURE1);
+            glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, getPaintTexture(textureMode));
             glmesh->enableVertexAttribArrays();
             glmesh->render();
@@ -443,6 +441,21 @@ void GLwidget::initshaider()
         std::cout<<"ERROR::/Render.frag"<<std::endl;
         close();
     }
+    if(!m_programBLIT.addShaderFromSourceFile(QOpenGLShader::Vertex,":/blit.vert"))
+    {
+        std::cout<<"ERROR::/blit.vert"<<std::endl;
+        close();
+    }
+    if(!m_programBLIT.addShaderFromSourceFile(QOpenGLShader::Fragment,":/blit.frag"))
+    {
+        std::cout<<"ERROR::/blit.frag"<<std::endl;
+        close();
+    }
+    if(!m_programBLIT.link())
+    {
+        std::cout<<"ERROR:blit"<<std::endl;
+        close();
+    }
     if(!m_programRender.link())
     {
         std::cout<<"ERROR:Render"<<std::endl;
@@ -682,6 +695,11 @@ void GLwidget::clearAllTextures()
     glClearColor(0.2f,0.2f,0.2f,0);
 }
 
+Material *GLwidget::getMaterial()
+{
+    return &material;
+}
+
 QOpenGLFramebufferObject *GLwidget::PaintFBO()
 {
     if (!_paintFbo) {
@@ -823,6 +841,41 @@ void GLwidget::setViewMode(ViewMode _viewMode)
 void GLwidget::setTextureMode(TextureMode _textureMode)
 {
     textureMode = _textureMode;
+}
+
+void GLwidget::setTexture(const std::string &_filepath, TextureMode _textureType)
+{
+    makeCurrent();
+
+    std::shared_ptr<Texture> tex = Texture::createTexture(_filepath, true);
+
+    // we only use 2d textures
+    if (tex->getTarget() != GL_TEXTURE_2D)
+    {
+        QMessageBox::critical(this, "Unsupported Texture Type", "The texture you tried to load is not supported as it is not 2D.");
+        return;
+    }
+
+    // bind paint fbo and bind the requested texture as attachment
+    glBindFramebuffer(GL_FRAMEBUFFER, paintFbo);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, getPaintTexture(_textureType), 0);
+    glViewport(0, 0, paintTextureWidth, paintTextureHeight);
+
+    m_programBLIT.bind();
+    m_programBLIT.setUniformValue("uSourceTexture",15);
+
+    // bind triangle mesh for fullscreen pass
+    guadandtringle->triangleEnable();
+
+    // set user selected texture as source texture for blit shader
+    glActiveTexture(GL_TEXTURE15);
+    glBindTexture(GL_TEXTURE_2D, tex->getId());
+
+    // fullscreen pass
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+
+    // rebind default fbo
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 }
 
 void GLwidget::clearActiveTexture(const QVector3D &_clearColor)

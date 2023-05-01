@@ -51,6 +51,7 @@ public:
     void toggleWireframe(bool _enabled);
     void setViewMode(ViewMode _viewMode);
     void setTextureMode(TextureMode _textureMode);
+    void setTexture(const std::string &_filepath, TextureMode _textureType);
     void clearActiveTexture(const QVector3D &_clearColor);
     void clearAllTextures();
     Material *getMaterial();
@@ -108,6 +109,7 @@ private:
     QOpenGLShaderProgram m_programTexture;
     QOpenGLShaderProgram m_programUV;
     QOpenGLShaderProgram m_programRender;
+    QOpenGLShaderProgram m_programBLIT;
     QVector2D m_mousePosition;
     QQuaternion m_rotation;
     std::shared_ptr<GLMesh> glmesh;

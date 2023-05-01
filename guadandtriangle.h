@@ -7,6 +7,7 @@ class guadAndtriangle
 public:
     guadAndtriangle();
     void quadEnable();
+    void triangleEnable();
     void drawbuffers();
     void genbuffers();
     void defaulbuffers();

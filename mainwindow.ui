@@ -95,7 +95,19 @@
     <property name="title">
      <string>File</string>
     </property>
+    <widget class="QMenu" name="menuImport_Texture">
+     <property name="title">
+      <string>Import Texture</string>
+     </property>
+     <addaction name="actionAlbedo"/>
+     <addaction name="actionMetallic"/>
+     <addaction name="actionRoughness"/>
+     <addaction name="actionAmbient_Occlusion"/>
+     <addaction name="actionEmissive"/>
+     <addaction name="actionDisplacement"/>
+    </widget>
     <addaction name="actionImport_models"/>
+    <addaction name="menuImport_Texture"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
@@ -121,6 +133,9 @@
      <addaction name="actionAlbedo_Texture"/>
      <addaction name="actionMetallic_Texture"/>
      <addaction name="actionRoughness_Texture"/>
+     <addaction name="actionAmbient_Occlusion_Texture"/>
+     <addaction name="actionEmissive_Texture"/>
+     <addaction name="actionDisplacement_Texture"/>
     </widget>
     <addaction name="separator"/>
     <addaction name="actionClear_Active_Texture"/>
@@ -260,6 +275,60 @@
   <action name="actionSet_Emissive_Color">
    <property name="text">
     <string>Set Emissive Color</string>
+   </property>
+  </action>
+  <action name="actionAmbient_Occlusion_Texture">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Ambient Occlusion Texture</string>
+   </property>
+  </action>
+  <action name="actionEmissive_Texture">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Emissive Texture</string>
+   </property>
+  </action>
+  <action name="actionDisplacement_Texture">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Displacement Texture</string>
+   </property>
+  </action>
+  <action name="actionAlbedo">
+   <property name="text">
+    <string>Albedo</string>
+   </property>
+  </action>
+  <action name="actionMetallic">
+   <property name="text">
+    <string>Metallic</string>
+   </property>
+  </action>
+  <action name="actionRoughness">
+   <property name="text">
+    <string>Roughness</string>
+   </property>
+  </action>
+  <action name="actionAmbient_Occlusion">
+   <property name="text">
+    <string>Ambient Occlusion</string>
+   </property>
+  </action>
+  <action name="actionEmissive">
+   <property name="text">
+    <string>Emissive</string>
+   </property>
+  </action>
+  <action name="actionDisplacement">
+   <property name="text">
+    <string>Displacement</string>
    </property>
   </action>
  </widget>

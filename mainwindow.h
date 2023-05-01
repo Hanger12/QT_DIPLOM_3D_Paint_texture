@@ -50,6 +50,24 @@ private slots:
 
     void on_actionSet_Emissive_Color_triggered();
 
+    void on_actionAmbient_Occlusion_Texture_toggled(bool arg1);
+
+    void on_actionEmissive_Texture_toggled(bool arg1);
+
+    void on_actionDisplacement_Texture_toggled(bool arg1);
+
+    void on_actionAlbedo_triggered();
+
+    void on_actionMetallic_triggered();
+
+    void on_actionRoughness_triggered();
+
+    void on_actionAmbient_Occlusion_triggered();
+
+    void on_actionEmissive_triggered();
+
+    void on_actionDisplacement_triggered();
+
 private:
     Ui::MainWindow *ui;
     std::mutex loadingMeshMutex;

@@ -606,6 +606,8 @@ DISTFILES += \
     UVview.vert \
     axis.frag \
     axis.vert \
+    blit.frag \
+    blit.vert \
     brush1.png \
     cube.jpeg \
     default1.frag \

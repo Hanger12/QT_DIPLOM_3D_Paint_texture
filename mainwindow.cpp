@@ -25,6 +25,9 @@ MainWindow::MainWindow(QWidget *parent)
     textureModeGroup->addAction(ui->actionAlbedo_Texture);
     textureModeGroup->addAction(ui->actionMetallic_Texture);
     textureModeGroup->addAction(ui->actionRoughness_Texture);
+    textureModeGroup->addAction(ui->actionAmbient_Occlusion_Texture);
+    textureModeGroup->addAction(ui->actionEmissive_Texture);
+    textureModeGroup->addAction(ui->actionDisplacement_Texture);
 //    textureModeGroup->addAction(actionActivateAmbientOcclusionTexture);
 //    textureModeGroup->addAction(actionActivateEmissiveTexture);
 //    textureModeGroup->addAction(actionActivateDisplacementTexture);
@@ -251,13 +254,111 @@ void MainWindow::on_actionClear_All_Textures_triggered()
 void MainWindow::on_actionSet_Emissive_Color_triggered()
 {
     QVector3D prevColor = ui->openGLWidget->getMaterial()->getEmissive() * 255.0f;
-    QColorDialog colorDialog({ int(prevColor.r), int(prevColor.g), int(prevColor.b) }, this);
+    QColorDialog colorDialog({ int(prevColor.x()), int(prevColor.y()), int(prevColor.z()) }, this);
     if (colorDialog.exec())
     {
         QColor qcolor = colorDialog.currentColor();
         float r, g, b;
         qcolor.getRgbF(&r, &g, &b);
         ui->openGLWidget->getMaterial()->setEmissive({ r, g, b });
+        ui->openGLWidget->update();
+    }
+}
+
+
+void MainWindow::on_actionAmbient_Occlusion_Texture_toggled(bool arg1)
+{
+    if (arg1)
+    {
+        ui->openGLWidget->setTextureMode(TextureMode::AMBIENT_OCCLUSION);
+        ui->openGLWidget->update();
+    }
+}
+
+
+void MainWindow::on_actionEmissive_Texture_toggled(bool arg1)
+{
+    if (arg1)
+    {
+        ui->openGLWidget->setTextureMode(TextureMode::EMISSIVE);
+        ui->openGLWidget->update();
+    }
+
+}
+
+
+void MainWindow::on_actionDisplacement_Texture_toggled(bool arg1)
+{
+    if (arg1)
+    {
+        ui->openGLWidget->setTextureMode(TextureMode::DISPLACEMENT);
+        ui->openGLWidget->update();
+    }
+}
+
+
+void MainWindow::on_actionAlbedo_triggered()
+{
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Albedo Texture"), "", tr("PNG (*.png);;DirectDrawSurface (*.dds)"));
+    if (!fileName.isEmpty())
+    {
+        ui->openGLWidget->setTexture(fileName.toLatin1().data(), TextureMode::ALBEDO);
+        ui->openGLWidget->update();
+    }
+}
+
+
+
+void MainWindow::on_actionMetallic_triggered()
+{
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Albedo Texture"), "", tr("PNG (*.png);;DirectDrawSurface (*.dds)"));
+    if (!fileName.isEmpty())
+    {
+        ui->openGLWidget->setTexture(fileName.toLatin1().data(), TextureMode::METALLIC);
+        ui->openGLWidget->update();
+    }
+}
+
+
+void MainWindow::on_actionRoughness_triggered()
+{
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Albedo Texture"), "", tr("PNG (*.png);;DirectDrawSurface (*.dds)"));
+    if (!fileName.isEmpty())
+    {
+        ui->openGLWidget->setTexture(fileName.toLatin1().data(), TextureMode::ROUGHNESS);
+        ui->openGLWidget->update();
+    }
+}
+
+
+void MainWindow::on_actionAmbient_Occlusion_triggered()
+{
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Albedo Texture"), "", tr("PNG (*.png);;DirectDrawSurface (*.dds)"));
+    if (!fileName.isEmpty())
+    {
+        ui->openGLWidget->setTexture(fileName.toLatin1().data(), TextureMode::AMBIENT_OCCLUSION);
+        ui->openGLWidget->update();
+    }
+}
+
+
+void MainWindow::on_actionEmissive_triggered()
+{
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Albedo Texture"), "", tr("PNG (*.png);;DirectDrawSurface (*.dds)"));
+    if (!fileName.isEmpty())
+    {
+        ui->openGLWidget->setTexture(fileName.toLatin1().data(), TextureMode::EMISSIVE);
+        ui->openGLWidget->update();
+    }
+}
+
+
+void MainWindow::on_actionDisplacement_triggered()
+{
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Albedo Texture"), "", tr("PNG (*.png);;DirectDrawSurface (*.dds)"));
+    if (!fileName.isEmpty())
+    {
+        ui->openGLWidget->setTexture(fileName.toLatin1().data(), TextureMode::DISPLACEMENT);
         ui->openGLWidget->update();
     }
 }
