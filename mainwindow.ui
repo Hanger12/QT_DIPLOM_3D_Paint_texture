@@ -18,7 +18,17 @@
     <item>
      <layout class="QVBoxLayout" name="verticalLayout_2">
       <item>
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>BrushColor</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="BrushColorButton" name="toolButton">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
         <property name="minimumSize">
          <size>
           <width>64</width>
@@ -33,6 +43,13 @@
           <width>64</width>
           <height>64</height>
          </size>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>Bruch size</string>
         </property>
        </widget>
       </item>
@@ -52,6 +69,13 @@
           <width>64</width>
           <height>64</height>
          </size>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string/>
         </property>
        </widget>
       </item>
@@ -106,8 +130,21 @@
      <addaction name="actionEmissive"/>
      <addaction name="actionDisplacement"/>
     </widget>
+    <widget class="QMenu" name="menuSave_Texture">
+     <property name="title">
+      <string>Save Texture</string>
+     </property>
+     <addaction name="actionAlbedo_Save"/>
+     <addaction name="actionMetallic_Save"/>
+     <addaction name="actionRoughness_Save"/>
+     <addaction name="actionAmbient_Occlusion_Save"/>
+     <addaction name="actionEmissive_Save"/>
+     <addaction name="actionDisplacement_Save"/>
+    </widget>
     <addaction name="actionImport_models"/>
     <addaction name="menuImport_Texture"/>
+    <addaction name="menuSave_Texture"/>
+    <addaction name="actionSave_all_Texture"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
@@ -160,24 +197,56 @@
    <property name="windowTitle">
     <string>toolBar</string>
    </property>
+   <property name="iconSize">
+    <size>
+     <width>40</width>
+     <height>40</height>
+    </size>
+   </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
    </attribute>
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="actionImport_models"/>
+   <addaction name="actionSave_all_Texture"/>
+   <addaction name="separator"/>
+   <addaction name="actionCenter_Camera"/>
+   <addaction name="actionClear_Active_Texture"/>
+   <addaction name="actionClear_All_Textures"/>
+   <addaction name="actionToggle_Wireframe"/>
+   <addaction name="actionSet_Emissive_Color"/>
+   <addaction name="separator"/>
+   <addaction name="actionDefault_View"/>
+   <addaction name="actionTexture_View"/>
+   <addaction name="actionUV_View"/>
+   <addaction name="actionRender_View"/>
+   <addaction name="separator"/>
   </widget>
   <action name="actionImport_models">
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/menu/menuBarIco/OpenFolder.png</normaloff>:/menu/menuBarIco/OpenFolder.png</iconset>
+   </property>
    <property name="text">
     <string>Import models</string>
    </property>
   </action>
   <action name="actionCenter_Camera">
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/menu/menuBarIco/cameraFocus.png</normaloff>:/menu/menuBarIco/cameraFocus.png</iconset>
+   </property>
    <property name="text">
     <string>Center Camera</string>
    </property>
   </action>
   <action name="actionClear_Active_Texture">
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/menu/menuBarIco/DeleteActiveTexture.png</normaloff>:/menu/menuBarIco/DeleteActiveTexture.png</iconset>
+   </property>
    <property name="text">
     <string>Clear Active Texture</string>
    </property>
@@ -196,6 +265,10 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/menu/menuBarIco/wireframe.png</normaloff>:/menu/menuBarIco/wireframe.png</iconset>
+   </property>
    <property name="text">
     <string>Toggle Wireframe</string>
    </property>
@@ -207,6 +280,10 @@
    <property name="checked">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/menu/menuBarIco/Default.png</normaloff>:/menu/menuBarIco/Default.png</iconset>
+   </property>
    <property name="text">
     <string>Default View</string>
    </property>
@@ -214,6 +291,10 @@
   <action name="actionTexture_View">
    <property name="checkable">
     <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/menu/menuBarIco/Texture.png</normaloff>:/menu/menuBarIco/Texture.png</iconset>
    </property>
    <property name="text">
     <string>Texture View</string>
@@ -228,6 +309,10 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/menu/menuBarIco/UV.png</normaloff>:/menu/menuBarIco/UV.png</iconset>
+   </property>
    <property name="text">
     <string>UV View</string>
    </property>
@@ -235,6 +320,10 @@
   <action name="actionRender_View">
    <property name="checkable">
     <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/menu/menuBarIco/Render.png</normaloff>:/menu/menuBarIco/Render.png</iconset>
    </property>
    <property name="text">
     <string>Render View</string>
@@ -268,11 +357,19 @@
    </property>
   </action>
   <action name="actionClear_All_Textures">
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/menu/menuBarIco/deleteAllTexture.png</normaloff>:/menu/menuBarIco/deleteAllTexture.png</iconset>
+   </property>
    <property name="text">
     <string>Clear All Textures</string>
    </property>
   </action>
   <action name="actionSet_Emissive_Color">
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/menu/menuBarIco/setpaint.png</normaloff>:/menu/menuBarIco/setpaint.png</iconset>
+   </property>
    <property name="text">
     <string>Set Emissive Color</string>
    </property>
@@ -331,6 +428,45 @@
     <string>Displacement</string>
    </property>
   </action>
+  <action name="actionSave_all_Texture">
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/menu/menuBarIco/SaveFile.png</normaloff>:/menu/menuBarIco/SaveFile.png</iconset>
+   </property>
+   <property name="text">
+    <string>Save all Texture</string>
+   </property>
+  </action>
+  <action name="actionAlbedo_Save">
+   <property name="text">
+    <string>Albedo</string>
+   </property>
+  </action>
+  <action name="actionMetallic_Save">
+   <property name="text">
+    <string>Metallic</string>
+   </property>
+  </action>
+  <action name="actionRoughness_Save">
+   <property name="text">
+    <string>Roughness</string>
+   </property>
+  </action>
+  <action name="actionAmbient_Occlusion_Save">
+   <property name="text">
+    <string>Ambient Occlusion</string>
+   </property>
+  </action>
+  <action name="actionEmissive_Save">
+   <property name="text">
+    <string>Emissive</string>
+   </property>
+  </action>
+  <action name="actionDisplacement_Save">
+   <property name="text">
+    <string>Displacement</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -349,6 +485,8 @@
    <header>buttons/brushsizebutton.h</header>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="resource.qrc"/>
+ </resources>
  <connections/>
 </ui>

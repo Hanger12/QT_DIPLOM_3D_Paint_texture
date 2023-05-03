@@ -22,4 +22,18 @@
         <file>brush1.png</file>
         <file>free-icon-3d-421003.png</file>
     </qresource>
+    <qresource prefix="/menu">
+        <file>menuBarIco/OpenFolder.png</file>
+        <file>menuBarIco/save.png</file>
+        <file>menuBarIco/SaveFile.png</file>
+        <file>menuBarIco/cameraFocus.png</file>
+        <file>menuBarIco/DeleteActiveTexture.png</file>
+        <file>menuBarIco/deleteAllTexture.png</file>
+        <file>menuBarIco/wireframe.png</file>
+        <file>menuBarIco/Default.png</file>
+        <file>menuBarIco/Render.png</file>
+        <file>menuBarIco/Texture.png</file>
+        <file>menuBarIco/UV.png</file>
+        <file>menuBarIco/setpaint.png</file>
+    </qresource>
 </RCC>

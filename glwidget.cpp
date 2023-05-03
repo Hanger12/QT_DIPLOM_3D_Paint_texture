@@ -3,6 +3,7 @@
 #include <QOpenGLFunctions_3_3_Core>
 #include <QOpenGLExtraFunctions>
 #include <iostream>
+#include <thread>
 #include <QFile>
 #include <QIODevice>
 #include <QString>
@@ -10,6 +11,7 @@
 #include <QPainter>
 #include <QMessageBox>
 #include <QVector>
+#include <stb/stb_image_write.h>
 #include "texture.h"
 #include "utility.h"
 #include <QMatrix3x3>
@@ -312,11 +314,6 @@ void GLwidget::mouseMoveEvent(QMouseEvent *_event)
             m_y -= diff.y()/160;
             update();
         }
-        else
-        {
-            cameraController.update(diff, 0.0f, true);
-            update();
-        }
     }
 }
 
@@ -576,7 +573,7 @@ void GLwidget::paint()
     }
     else
     {
-        m_programPaint.setUniformValue("uColor",paintColor.dotProduct(paintColor,QVector3D(0.2126f, 0.7152f, 0.0722f)));
+        m_programPaint.setUniformValue("uColor",QVector3D(0.922,0.914,0.651));
     }
 
     // bind the paint fbo and the current texture
@@ -898,4 +895,36 @@ QVector3D GLwidget::getPaintColor() const
 float GLwidget::getStrokeWidth() const
 {
     return strokeWidth;
+}
+
+void GLwidget::saveTexture(const std::string &_filepath, TextureMode _textureType)
+{
+    makeCurrent();
+
+    std::unique_ptr<unsigned char[]> textureData = std::make_unique<unsigned char[]>(paintTextureWidth * paintTextureHeight * 4);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, getPaintTexture(_textureType));
+
+    glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureData.get());
+
+    // save in seperate thread so that the main window does not get blocked
+    std::thread t([textureData = std::move(textureData), _filepath, this]()
+    {
+        stbi_flip_vertically_on_write(false);
+        stbi_write_png(_filepath.c_str(), paintTextureWidth, paintTextureHeight, 4, textureData.get(), 0);
+    });
+    t.detach();
+}
+
+void GLwidget::saveAllTextures(const std::string &_filepath)
+{
+    std::string formattedTime = Utility::getFormatedTime();
+
+    saveTexture(_filepath + "/" + formattedTime + "_albedo.png", TextureMode::ALBEDO);
+    saveTexture(_filepath + "/" + formattedTime + "_metallic.png", TextureMode::METALLIC);
+    saveTexture(_filepath + "/" + formattedTime + "_roughness.png", TextureMode::ROUGHNESS);
+    saveTexture(_filepath + "/" + formattedTime + "_ambient_occlusion.png", TextureMode::AMBIENT_OCCLUSION);
+    saveTexture(_filepath + "/" + formattedTime + "_emissive.png", TextureMode::EMISSIVE);
+    saveTexture(_filepath + "/" + formattedTime + "_displacement.png", TextureMode::DISPLACEMENT);
 }

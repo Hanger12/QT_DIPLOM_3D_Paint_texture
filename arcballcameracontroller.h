@@ -13,4 +13,5 @@ private:
     std::shared_ptr<Camera> camera;
     QVector3D center;
     float distance;
+    bool needupdateCenter=false;
 };

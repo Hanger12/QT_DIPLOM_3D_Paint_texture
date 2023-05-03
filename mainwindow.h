@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <mutex>
 #include <QActionGroup>
+#include <QVector3D>
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -68,11 +69,26 @@ private slots:
 
     void on_actionDisplacement_triggered();
 
+    void on_actionSave_all_Texture_triggered();
+
+    void on_actionAlbedo_Save_triggered();
+
+    void on_actionMetallic_Save_triggered();
+
+    void on_actionRoughness_Save_triggered();
+
+    void on_actionAmbient_Occlusion_Save_triggered();
+
+    void on_actionEmissive_Save_triggered();
+
+    void on_actionDisplacement_Save_triggered();
+
 private:
     Ui::MainWindow *ui;
     std::mutex loadingMeshMutex;
     bool loadingMesh;
     QActionGroup *viewModeGroup;
     QActionGroup *textureModeGroup;
+    QVector3D prevcolor;
 };
 #endif // MAINWINDOW_H

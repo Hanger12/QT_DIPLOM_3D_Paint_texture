@@ -117,5 +117,9 @@ void Camera::reset()
 
 void Camera::updateViewMatrix()
 {
-    viewMatrix.translate(position);
+    qDebug()<<"forward "<<viewMatrix.column(2);
+    //viewMatrix.rotate(QQuaternion(1,QVector3D(0.0,0.0,0.0)));
+    viewMatrix.setToIdentity();
+    rotation = QQuaternion(1,QVector3D(0.0,0.0,0.0));
+    qDebug()<<"forwardtiuodate "<<viewMatrix.column(2);
 }

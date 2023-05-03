@@ -24,6 +24,7 @@ public:
     QVector3D getRightDirection();
     float getZoom() const;
     void reset();
+    void updateViewMatrix();
 
 private:
     QVector3D position;
@@ -37,5 +38,4 @@ private:
     float zoom = 1.0f;
     bool needToUpdateViewMatrix = true;
 
-    void updateViewMatrix();
 };

@@ -20,17 +20,27 @@ void ArcBallCameraController::update(const QVector2D &_mouseDelta, float _scroll
     }
     else
     {
-        float pitch = _mouseDelta.y()*1.2;
-        float camY = camera->getForwardDirection().y();
-        pitch = qBound(-1.0f, pitch - camY, 1.0f) + camY;
-        camera->rotate(QVector3D(pitch, _mouseDelta.x() * 0.5f, 0.0f));
-    }
+        if(!needupdateCenter)
+        {
+            float pitch = _mouseDelta.y()*1.2;
+            float camY = camera->getForwardDirection().y();
+            pitch = qBound(-1.0f, pitch - camY, 1.0f) + camY;
+            camera->rotate(QVector3D(pitch, _mouseDelta.x() * 0.5f, 0.0f));
+        }
+        else
+        {
+            camera->updateViewMatrix();
+            needupdateCenter=false;
+            camera->rotate(QVector3D(0.0,0.0, 0.0f));
+        }
+    } 
     camera->setPosition(center - camera->getForwardDirection() * distance);
     camera->lookAt(center);
 }
 
 void ArcBallCameraController::centerCamera()
 {
+    needupdateCenter=true;
     center = QVector3D(0.0f,0.0f,0.0f);
     update(QVector2D(0.0f,0.0f), 0.0f, false);
 }

@@ -11,6 +11,8 @@
 #include <QColorDialog>
 #include "sessionsettings.h"
 #include <QInputDialog>
+#include <QString>
+#include "buttons/brushsizebutton.h"
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow),loadingMesh(false)
@@ -28,9 +30,7 @@ MainWindow::MainWindow(QWidget *parent)
     textureModeGroup->addAction(ui->actionAmbient_Occlusion_Texture);
     textureModeGroup->addAction(ui->actionEmissive_Texture);
     textureModeGroup->addAction(ui->actionDisplacement_Texture);
-//    textureModeGroup->addAction(actionActivateAmbientOcclusionTexture);
-//    textureModeGroup->addAction(actionActivateEmissiveTexture);
-//    textureModeGroup->addAction(actionActivateDisplacementTexture);
+
 }
 
 MainWindow::~MainWindow()
@@ -129,8 +129,8 @@ void MainWindow::on_actionClear_Active_Texture_triggered()
 
 void MainWindow::on_actionSet_Paint_triggered()
 {
-    QVector3D prevColor = ui->openGLWidget->getPaintColor() * 255.0f; // QColor uses 0 - 255
-    QColorDialog colorDialog({ int(prevColor.x()), int(prevColor.y()), int(prevColor.z() )}, this);
+    QVector3D prevColor1 = ui->openGLWidget->getPaintColor() * 255.0f; // QColor uses 0 - 255
+    QColorDialog colorDialog({ int(prevColor1.x()), int(prevColor1.y()), int(prevColor1.z() )}, this);
     if (colorDialog.exec())
     {
         QColor qcolor = colorDialog.currentColor();
@@ -210,6 +210,9 @@ void MainWindow::on_actionAlbedo_Texture_toggled(bool arg1)
     if (arg1)
     {
         ui->openGLWidget->setTextureMode(TextureMode::ALBEDO);
+        ui->toolButton->setEnabled(true);
+        ui->actionSet_Paint->setEnabled(true);
+        ui->actionSet_Emissive_Color->setEnabled(false);
         ui->openGLWidget->update();
     }
 }
@@ -220,6 +223,9 @@ void MainWindow::on_actionMetallic_Texture_toggled(bool arg1)
     if (arg1)
     {
         ui->openGLWidget->setTextureMode(TextureMode::METALLIC);
+        ui->toolButton->setEnabled(false);
+        ui->actionSet_Paint->setEnabled(false);
+        ui->actionSet_Emissive_Color->setEnabled(false);
         ui->openGLWidget->update();
     }
 }
@@ -230,6 +236,9 @@ void MainWindow::on_actionRoughness_Texture_toggled(bool arg1)
     if (arg1)
     {
         ui->openGLWidget->setTextureMode(TextureMode::ROUGHNESS);
+        ui->toolButton->setEnabled(false);
+        ui->actionSet_Paint->setEnabled(false);
+        ui->actionSet_Emissive_Color->setEnabled(false);
         ui->openGLWidget->update();
     }
 }
@@ -271,6 +280,9 @@ void MainWindow::on_actionAmbient_Occlusion_Texture_toggled(bool arg1)
     if (arg1)
     {
         ui->openGLWidget->setTextureMode(TextureMode::AMBIENT_OCCLUSION);
+        ui->toolButton->setEnabled(false);
+        ui->actionSet_Paint->setEnabled(false);
+        ui->actionSet_Emissive_Color->setEnabled(false);
         ui->openGLWidget->update();
     }
 }
@@ -281,6 +293,9 @@ void MainWindow::on_actionEmissive_Texture_toggled(bool arg1)
     if (arg1)
     {
         ui->openGLWidget->setTextureMode(TextureMode::EMISSIVE);
+        ui->toolButton->setEnabled(true);
+        ui->actionSet_Paint->setEnabled(true);
+        ui->actionSet_Emissive_Color->setEnabled(true);
         ui->openGLWidget->update();
     }
 
@@ -292,6 +307,9 @@ void MainWindow::on_actionDisplacement_Texture_toggled(bool arg1)
     if (arg1)
     {
         ui->openGLWidget->setTextureMode(TextureMode::DISPLACEMENT);
+        ui->toolButton->setEnabled(false);
+        ui->actionSet_Paint->setEnabled(false);
+        ui->actionSet_Emissive_Color->setEnabled(false);
         ui->openGLWidget->update();
     }
 }
@@ -311,7 +329,7 @@ void MainWindow::on_actionAlbedo_triggered()
 
 void MainWindow::on_actionMetallic_triggered()
 {
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Albedo Texture"), "", tr("PNG (*.png);;DirectDrawSurface (*.dds)"));
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Metallic Texture"), "", tr("PNG (*.png);;DirectDrawSurface (*.dds)"));
     if (!fileName.isEmpty())
     {
         ui->openGLWidget->setTexture(fileName.toLatin1().data(), TextureMode::METALLIC);
@@ -322,7 +340,7 @@ void MainWindow::on_actionMetallic_triggered()
 
 void MainWindow::on_actionRoughness_triggered()
 {
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Albedo Texture"), "", tr("PNG (*.png);;DirectDrawSurface (*.dds)"));
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Roughness Texture"), "", tr("PNG (*.png);;DirectDrawSurface (*.dds)"));
     if (!fileName.isEmpty())
     {
         ui->openGLWidget->setTexture(fileName.toLatin1().data(), TextureMode::ROUGHNESS);
@@ -333,7 +351,7 @@ void MainWindow::on_actionRoughness_triggered()
 
 void MainWindow::on_actionAmbient_Occlusion_triggered()
 {
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Albedo Texture"), "", tr("PNG (*.png);;DirectDrawSurface (*.dds)"));
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Ambient Occlusion Texture"), "", tr("PNG (*.png);;DirectDrawSurface (*.dds)"));
     if (!fileName.isEmpty())
     {
         ui->openGLWidget->setTexture(fileName.toLatin1().data(), TextureMode::AMBIENT_OCCLUSION);
@@ -344,7 +362,7 @@ void MainWindow::on_actionAmbient_Occlusion_triggered()
 
 void MainWindow::on_actionEmissive_triggered()
 {
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Albedo Texture"), "", tr("PNG (*.png);;DirectDrawSurface (*.dds)"));
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Emissive Texture"), "", tr("PNG (*.png);;DirectDrawSurface (*.dds)"));
     if (!fileName.isEmpty())
     {
         ui->openGLWidget->setTexture(fileName.toLatin1().data(), TextureMode::EMISSIVE);
@@ -355,11 +373,81 @@ void MainWindow::on_actionEmissive_triggered()
 
 void MainWindow::on_actionDisplacement_triggered()
 {
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Albedo Texture"), "", tr("PNG (*.png);;DirectDrawSurface (*.dds)"));
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Displacement Texture"), "", tr("PNG (*.png);;DirectDrawSurface (*.dds)"));
     if (!fileName.isEmpty())
     {
         ui->openGLWidget->setTexture(fileName.toLatin1().data(), TextureMode::DISPLACEMENT);
         ui->openGLWidget->update();
+    }
+}
+
+
+void MainWindow::on_actionSave_all_Texture_triggered()
+{
+    QString directoryName = QFileDialog::getExistingDirectory(this, tr("Save All Textures"), "", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    if (!directoryName.isEmpty())
+    {
+        ui->openGLWidget->saveAllTextures(directoryName.toLatin1().data());
+    }
+}
+
+
+void MainWindow::on_actionAlbedo_Save_triggered()
+{
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Save Albedo Texture"), "", tr("PNG (*.png)"));
+    if (!fileName.isEmpty())
+    {
+        ui->openGLWidget->saveTexture(fileName.toLatin1().data(), TextureMode::ALBEDO);
+    }
+}
+
+
+void MainWindow::on_actionMetallic_Save_triggered()
+{
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Save Metallic Texture"), "", tr("PNG (*.png)"));
+    if (!fileName.isEmpty())
+    {
+        ui->openGLWidget->saveTexture(fileName.toLatin1().data(), TextureMode::METALLIC);
+    }
+}
+
+
+void MainWindow::on_actionRoughness_Save_triggered()
+{
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Save Roughness Texture"), "", tr("PNG (*.png)"));
+    if (!fileName.isEmpty())
+    {
+        ui->openGLWidget->saveTexture(fileName.toLatin1().data(), TextureMode::ROUGHNESS);
+    }
+}
+
+
+void MainWindow::on_actionAmbient_Occlusion_Save_triggered()
+{
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Save Ambient Occlusion Texture"), "", tr("PNG (*.png)"));
+    if (!fileName.isEmpty())
+    {
+        ui->openGLWidget->saveTexture(fileName.toLatin1().data(), TextureMode::AMBIENT_OCCLUSION);
+    }
+}
+
+
+void MainWindow::on_actionEmissive_Save_triggered()
+{
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Save Emissive Texture"), "", tr("PNG (*.png)"));
+    if (!fileName.isEmpty())
+    {
+        ui->openGLWidget->saveTexture(fileName.toLatin1().data(), TextureMode::EMISSIVE);
+    }
+}
+
+
+void MainWindow::on_actionDisplacement_Save_triggered()
+{
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Save Displacement Texture"), "", tr("PNG (*.png)"));
+    if (!fileName.isEmpty())
+    {
+        ui->openGLWidget->saveTexture(fileName.toLatin1().data(), TextureMode::DISPLACEMENT);
     }
 }
 

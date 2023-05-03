@@ -57,6 +57,8 @@ public:
     Material *getMaterial();
     QVector3D getPaintColor() const;
     float getStrokeWidth() const;
+    void saveTexture(const std::string &_filepath, TextureMode _textureType);
+    void saveAllTextures(const std::string &_filepath);
 protected:
     void initializeGL() override;
     void paintGL() override;

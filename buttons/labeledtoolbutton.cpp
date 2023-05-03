@@ -16,27 +16,25 @@ void LabeledToolButton::paintEvent(QPaintEvent *event)
     QPainter p(this);
 
     QFont textFont = p.font();
-    textFont.setPixelSize(9);
+    textFont.setPixelSize(12);
     p.setFont(textFont);
     const int textHeight = p.fontMetrics().height();
     QColor textBgColor(200, 200, 200, 240);
 
-    // draw labels
-    //
-    QString nameText = toolName();
-    if (nameText.length() > 0) {
-        int textWidth = p.fontMetrics().lineWidth();
-        QPoint textP(2, textHeight + 2);
-        p.fillRect(0, 0, textWidth + 4, textHeight + 4, textBgColor);
-        p.setPen(Qt::black);
-        p.drawText(textP, nameText);
-    }
+//    // draw labels
+//    //
+//    QString nameText = toolName();
+//    if (nameText.length() > 0) {
+//        int textWidth = p.fontMetrics().lineWidth()*3;
+//        QPoint textP(4, textHeight + 2);
+//        p.fillRect(0, 0, textWidth +75, textHeight+4, textBgColor);
+//        p.setPen(Qt::black);
+//        p.drawText(textP, nameText);
+//    }
 
     QString valueText = toolValue();
     if (valueText.length() > 0) {
-        int textWidth = p.fontMetrics().lineWidth();
-        QPoint textP(width() - textWidth - 2, height() - 2);
-        p.fillRect(textP.x() - 2, textP.y() - 2 - textHeight, textWidth + 4, textHeight + 4, textBgColor);
+        QPoint textP(width()/2-10, height() - 2);
         p.setPen(Qt::black);
         p.drawText(textP, valueText);
     }
