@@ -20,7 +20,7 @@
       <item>
        <widget class="QLabel" name="label">
         <property name="text">
-         <string>BrushColor</string>
+         <string>Цвет кисти</string>
         </property>
        </widget>
       </item>
@@ -49,7 +49,19 @@
       <item>
        <widget class="QLabel" name="label_2">
         <property name="text">
-         <string>Bruch size</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Размер&lt;/p&gt;&lt;p&gt;кисти&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+        <property name="wordWrap">
+         <bool>false</bool>
+        </property>
+        <property name="indent">
+         <number>-3</number>
+        </property>
+        <property name="openExternalLinks">
+         <bool>false</bool>
         </property>
        </widget>
       </item>
@@ -69,13 +81,6 @@
           <width>64</width>
           <height>64</height>
          </size>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_3">
-        <property name="text">
-         <string/>
         </property>
        </widget>
       </item>
@@ -117,11 +122,11 @@
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
-     <string>File</string>
+     <string>Файл</string>
     </property>
     <widget class="QMenu" name="menuImport_Texture">
      <property name="title">
-      <string>Import Texture</string>
+      <string>Импорт Текстуры</string>
      </property>
      <addaction name="actionAlbedo"/>
      <addaction name="actionMetallic"/>
@@ -132,7 +137,7 @@
     </widget>
     <widget class="QMenu" name="menuSave_Texture">
      <property name="title">
-      <string>Save Texture</string>
+      <string>Сохранить Текстуру</string>
      </property>
      <addaction name="actionAlbedo_Save"/>
      <addaction name="actionMetallic_Save"/>
@@ -148,7 +153,7 @@
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
-     <string>View</string>
+     <string>Окно</string>
     </property>
     <addaction name="actionCenter_Camera"/>
     <addaction name="separator"/>
@@ -161,11 +166,11 @@
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
-     <string>Edit</string>
+     <string>Редактор</string>
     </property>
     <widget class="QMenu" name="menuActive_Texture">
      <property name="title">
-      <string>Active Texture</string>
+      <string>Активировать Текстуру</string>
      </property>
      <addaction name="actionAlbedo_Texture"/>
      <addaction name="actionMetallic_Texture"/>
@@ -184,7 +189,7 @@
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
-     <string>Help</string>
+     <string>Помощь</string>
     </property>
     <addaction name="actionAbou_Program"/>
    </widget>
@@ -230,7 +235,10 @@
      <normaloff>:/menu/menuBarIco/OpenFolder.png</normaloff>:/menu/menuBarIco/OpenFolder.png</iconset>
    </property>
    <property name="text">
-    <string>Import models</string>
+    <string>Импорт Модели</string>
+   </property>
+   <property name="toolTip">
+    <string>Импортировать модель</string>
    </property>
   </action>
   <action name="actionCenter_Camera">
@@ -239,7 +247,7 @@
      <normaloff>:/menu/menuBarIco/cameraFocus.png</normaloff>:/menu/menuBarIco/cameraFocus.png</iconset>
    </property>
    <property name="text">
-    <string>Center Camera</string>
+    <string>Центрировать Камеру</string>
    </property>
   </action>
   <action name="actionClear_Active_Texture">
@@ -248,17 +256,17 @@
      <normaloff>:/menu/menuBarIco/DeleteActiveTexture.png</normaloff>:/menu/menuBarIco/DeleteActiveTexture.png</iconset>
    </property>
    <property name="text">
-    <string>Clear Active Texture</string>
+    <string>Очистить Активную Текстуру</string>
    </property>
   </action>
   <action name="actionSet_Paint">
    <property name="text">
-    <string>Set Paint</string>
+    <string>Задать цвет кисти</string>
    </property>
   </action>
   <action name="actionSet_Stroke_Width">
    <property name="text">
-    <string>Set Stroke Width</string>
+    <string>Задать ширину кисти</string>
    </property>
   </action>
   <action name="actionToggle_Wireframe">
@@ -270,7 +278,7 @@
      <normaloff>:/menu/menuBarIco/wireframe.png</normaloff>:/menu/menuBarIco/wireframe.png</iconset>
    </property>
    <property name="text">
-    <string>Toggle Wireframe</string>
+    <string>Включить Сетку</string>
    </property>
   </action>
   <action name="actionDefault_View">
@@ -285,7 +293,7 @@
      <normaloff>:/menu/menuBarIco/Default.png</normaloff>:/menu/menuBarIco/Default.png</iconset>
    </property>
    <property name="text">
-    <string>Default View</string>
+    <string>Стандартный вид</string>
    </property>
   </action>
   <action name="actionTexture_View">
@@ -297,12 +305,12 @@
      <normaloff>:/menu/menuBarIco/Texture.png</normaloff>:/menu/menuBarIco/Texture.png</iconset>
    </property>
    <property name="text">
-    <string>Texture View</string>
+    <string>Текстурный Вид</string>
    </property>
   </action>
   <action name="actionAbou_Program">
    <property name="text">
-    <string>About Program</string>
+    <string>О программе</string>
    </property>
   </action>
   <action name="actionUV_View">
@@ -314,7 +322,7 @@
      <normaloff>:/menu/menuBarIco/UV.png</normaloff>:/menu/menuBarIco/UV.png</iconset>
    </property>
    <property name="text">
-    <string>UV View</string>
+    <string>UV Вид</string>
    </property>
   </action>
   <action name="actionRender_View">
@@ -326,7 +334,7 @@
      <normaloff>:/menu/menuBarIco/Render.png</normaloff>:/menu/menuBarIco/Render.png</iconset>
    </property>
    <property name="text">
-    <string>Render View</string>
+    <string>Рендер Вид</string>
    </property>
   </action>
   <action name="actionAlbedo_Texture">
@@ -337,7 +345,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Albedo Texture</string>
+    <string>Albedo Текстура</string>
    </property>
   </action>
   <action name="actionMetallic_Texture">
@@ -345,7 +353,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Metallic Texture</string>
+    <string>Metallic Текстура</string>
    </property>
   </action>
   <action name="actionRoughness_Texture">
@@ -353,7 +361,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Roughness Texture</string>
+    <string>Roughness Текстура</string>
    </property>
   </action>
   <action name="actionClear_All_Textures">
@@ -362,7 +370,7 @@
      <normaloff>:/menu/menuBarIco/deleteAllTexture.png</normaloff>:/menu/menuBarIco/deleteAllTexture.png</iconset>
    </property>
    <property name="text">
-    <string>Clear All Textures</string>
+    <string>Очистить все Текстуры</string>
    </property>
   </action>
   <action name="actionSet_Emissive_Color">
@@ -371,7 +379,7 @@
      <normaloff>:/menu/menuBarIco/setpaint.png</normaloff>:/menu/menuBarIco/setpaint.png</iconset>
    </property>
    <property name="text">
-    <string>Set Emissive Color</string>
+    <string>Задать цвет свечения</string>
    </property>
   </action>
   <action name="actionAmbient_Occlusion_Texture">
@@ -379,7 +387,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Ambient Occlusion Texture</string>
+    <string>Ambient Occlusion Текстура</string>
    </property>
   </action>
   <action name="actionEmissive_Texture">
@@ -387,7 +395,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Emissive Texture</string>
+    <string>Emissive Текстура</string>
    </property>
   </action>
   <action name="actionDisplacement_Texture">
@@ -395,7 +403,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Displacement Texture</string>
+    <string>Displacement Текстура</string>
    </property>
   </action>
   <action name="actionAlbedo">
@@ -434,7 +442,7 @@
      <normaloff>:/menu/menuBarIco/SaveFile.png</normaloff>:/menu/menuBarIco/SaveFile.png</iconset>
    </property>
    <property name="text">
-    <string>Save all Texture</string>
+    <string>Сохранить все Текстуры</string>
    </property>
   </action>
   <action name="actionAlbedo_Save">

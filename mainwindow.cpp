@@ -12,7 +12,6 @@
 #include "sessionsettings.h"
 #include <QInputDialog>
 #include <QString>
-#include "buttons/brushsizebutton.h"
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow),loadingMesh(false)
@@ -42,7 +41,7 @@ MainWindow::~MainWindow()
 void MainWindow::on_actionImport_models_triggered()
 {
     // get file path
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Mesh File"), "", tr("Wavefront OBJ File (*.obj)"));
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Открыть файл модели"), "", tr("Wavefront OBJ File (*.obj)"));
 
     // get lock on bool to check if there is already a loading operation going on
     std::lock_guard<std::mutex> lockCheck(loadingMeshMutex);
@@ -54,7 +53,7 @@ void MainWindow::on_actionImport_models_triggered()
         loadingMesh = true;
         MainWindow *meshTool = this;
 
-        QMessageBox::information(this, "Loading Model", "The model is being loaded in the background. This may take a while.");
+        QMessageBox::information(this, "Загрузка модели", "Модель загружается в фоновом режиме. Это может занять некоторое время.");
 
         // start thread to load mesh
         std::thread meshLoadThread([fileName, meshTool]()
@@ -72,7 +71,7 @@ void MainWindow::on_actionImport_models_triggered()
             {
                 if (loadError != OBJLoader::Error::SUCCESS)
                 {
-                    QMessageBox::critical(meshTool, "Model Loading Failed!", "Loading the Model has failed.");
+                    QMessageBox::critical(meshTool, "Ошибка загрузки модели", "Не удалось загрузить модель.");
 
                     // acquire lock to signal that mesh loading is done
                     std::lock_guard<std::mutex> lockReset(meshTool->loadingMeshMutex);
@@ -107,15 +106,15 @@ void MainWindow::on_actionCenter_Camera_triggered()
 void MainWindow::on_actionClear_Active_Texture_triggered()
 {
     QMessageBox msgBox;
-    msgBox.setWindowTitle("Clear Active Texture");
-    msgBox.setText("Are you sure you want to clear the active texture?");
+    msgBox.setWindowTitle("Очистить Активную Текстуру");
+    msgBox.setText("Вы уверены, что хотите очистить активную текстуру?");
     msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
     msgBox.setDefaultButton(QMessageBox::Yes);
 
     if (msgBox.exec() == QMessageBox::Yes)
     {
         QColorDialog colorDialog(this);
-        colorDialog.setWindowTitle("Set Clear Color");
+        colorDialog.setWindowTitle("Задать новый цвет");
         if (colorDialog.exec())
         {
             float r, g, b;
@@ -144,7 +143,7 @@ void MainWindow::on_actionSet_Paint_triggered()
 
 void MainWindow::on_actionSet_Stroke_Width_triggered()
 {
-    int result = QInputDialog::getInt(this, tr("Set Stroke Width"), tr("Set Stroke Width"), ui->openGLWidget->getStrokeWidth(), 1, 256);
+    int result = QInputDialog::getInt(this, tr("Задать размер кисти"), tr("Задать размер кисти"), ui->openGLWidget->getStrokeWidth(), 1, 256);
     settings()->setBrushSize(result);
     ui->openGLWidget->update();
 }
@@ -247,8 +246,8 @@ void MainWindow::on_actionRoughness_Texture_toggled(bool arg1)
 void MainWindow::on_actionClear_All_Textures_triggered()
 {
     QMessageBox msgBox;
-    msgBox.setWindowTitle("Clear All Textures");
-    msgBox.setText("Are you sure you want to clear all textures and reset them to default values?");
+    msgBox.setWindowTitle("Очистить все Текстуры");
+    msgBox.setText("Вы уверены, что хотите очистить все текстуры и сбросить их до значений по умолчанию?");
     msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
     msgBox.setDefaultButton(QMessageBox::Yes);
 
@@ -317,7 +316,7 @@ void MainWindow::on_actionDisplacement_Texture_toggled(bool arg1)
 
 void MainWindow::on_actionAlbedo_triggered()
 {
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Albedo Texture"), "", tr("PNG (*.png);;DirectDrawSurface (*.dds)"));
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Открыть Albedo Текстуру"), "", tr("PNG (*.png);;DirectDrawSurface (*.dds)"));
     if (!fileName.isEmpty())
     {
         ui->openGLWidget->setTexture(fileName.toLatin1().data(), TextureMode::ALBEDO);
@@ -329,7 +328,7 @@ void MainWindow::on_actionAlbedo_triggered()
 
 void MainWindow::on_actionMetallic_triggered()
 {
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Metallic Texture"), "", tr("PNG (*.png);;DirectDrawSurface (*.dds)"));
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Открыть Metallic Текстуру"), "", tr("PNG (*.png);;DirectDrawSurface (*.dds)"));
     if (!fileName.isEmpty())
     {
         ui->openGLWidget->setTexture(fileName.toLatin1().data(), TextureMode::METALLIC);
@@ -340,7 +339,7 @@ void MainWindow::on_actionMetallic_triggered()
 
 void MainWindow::on_actionRoughness_triggered()
 {
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Roughness Texture"), "", tr("PNG (*.png);;DirectDrawSurface (*.dds)"));
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Открыть Roughness Текстуру"), "", tr("PNG (*.png);;DirectDrawSurface (*.dds)"));
     if (!fileName.isEmpty())
     {
         ui->openGLWidget->setTexture(fileName.toLatin1().data(), TextureMode::ROUGHNESS);
@@ -351,7 +350,7 @@ void MainWindow::on_actionRoughness_triggered()
 
 void MainWindow::on_actionAmbient_Occlusion_triggered()
 {
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Ambient Occlusion Texture"), "", tr("PNG (*.png);;DirectDrawSurface (*.dds)"));
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Открыть Ambient Occlusion Текстуру"), "", tr("PNG (*.png);;DirectDrawSurface (*.dds)"));
     if (!fileName.isEmpty())
     {
         ui->openGLWidget->setTexture(fileName.toLatin1().data(), TextureMode::AMBIENT_OCCLUSION);
@@ -362,7 +361,7 @@ void MainWindow::on_actionAmbient_Occlusion_triggered()
 
 void MainWindow::on_actionEmissive_triggered()
 {
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Emissive Texture"), "", tr("PNG (*.png);;DirectDrawSurface (*.dds)"));
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Открыть Emissive Текстуру"), "", tr("PNG (*.png);;DirectDrawSurface (*.dds)"));
     if (!fileName.isEmpty())
     {
         ui->openGLWidget->setTexture(fileName.toLatin1().data(), TextureMode::EMISSIVE);
@@ -373,7 +372,7 @@ void MainWindow::on_actionEmissive_triggered()
 
 void MainWindow::on_actionDisplacement_triggered()
 {
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Displacement Texture"), "", tr("PNG (*.png);;DirectDrawSurface (*.dds)"));
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Открыть Displacement Текстуру"), "", tr("PNG (*.png);;DirectDrawSurface (*.dds)"));
     if (!fileName.isEmpty())
     {
         ui->openGLWidget->setTexture(fileName.toLatin1().data(), TextureMode::DISPLACEMENT);
@@ -384,7 +383,7 @@ void MainWindow::on_actionDisplacement_triggered()
 
 void MainWindow::on_actionSave_all_Texture_triggered()
 {
-    QString directoryName = QFileDialog::getExistingDirectory(this, tr("Save All Textures"), "", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    QString directoryName = QFileDialog::getExistingDirectory(this, tr("Сохранить все Текстуры"), "", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
     if (!directoryName.isEmpty())
     {
         ui->openGLWidget->saveAllTextures(directoryName.toLatin1().data());
@@ -394,7 +393,7 @@ void MainWindow::on_actionSave_all_Texture_triggered()
 
 void MainWindow::on_actionAlbedo_Save_triggered()
 {
-    QString fileName = QFileDialog::getSaveFileName(this, tr("Save Albedo Texture"), "", tr("PNG (*.png)"));
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Сохранить Albedo Текстуру"), "", tr("PNG (*.png)"));
     if (!fileName.isEmpty())
     {
         ui->openGLWidget->saveTexture(fileName.toLatin1().data(), TextureMode::ALBEDO);
@@ -404,7 +403,7 @@ void MainWindow::on_actionAlbedo_Save_triggered()
 
 void MainWindow::on_actionMetallic_Save_triggered()
 {
-    QString fileName = QFileDialog::getSaveFileName(this, tr("Save Metallic Texture"), "", tr("PNG (*.png)"));
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Сохранить Metallic Текстуру"), "", tr("PNG (*.png)"));
     if (!fileName.isEmpty())
     {
         ui->openGLWidget->saveTexture(fileName.toLatin1().data(), TextureMode::METALLIC);
@@ -414,7 +413,7 @@ void MainWindow::on_actionMetallic_Save_triggered()
 
 void MainWindow::on_actionRoughness_Save_triggered()
 {
-    QString fileName = QFileDialog::getSaveFileName(this, tr("Save Roughness Texture"), "", tr("PNG (*.png)"));
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Сохранить Roughness Текстуру"), "", tr("PNG (*.png)"));
     if (!fileName.isEmpty())
     {
         ui->openGLWidget->saveTexture(fileName.toLatin1().data(), TextureMode::ROUGHNESS);
@@ -424,7 +423,7 @@ void MainWindow::on_actionRoughness_Save_triggered()
 
 void MainWindow::on_actionAmbient_Occlusion_Save_triggered()
 {
-    QString fileName = QFileDialog::getSaveFileName(this, tr("Save Ambient Occlusion Texture"), "", tr("PNG (*.png)"));
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Сохранить Ambient Occlusion Текстуру"), "", tr("PNG (*.png)"));
     if (!fileName.isEmpty())
     {
         ui->openGLWidget->saveTexture(fileName.toLatin1().data(), TextureMode::AMBIENT_OCCLUSION);
@@ -434,7 +433,7 @@ void MainWindow::on_actionAmbient_Occlusion_Save_triggered()
 
 void MainWindow::on_actionEmissive_Save_triggered()
 {
-    QString fileName = QFileDialog::getSaveFileName(this, tr("Save Emissive Texture"), "", tr("PNG (*.png)"));
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Сохранить Emissive Текстуру"), "", tr("PNG (*.png)"));
     if (!fileName.isEmpty())
     {
         ui->openGLWidget->saveTexture(fileName.toLatin1().data(), TextureMode::EMISSIVE);
@@ -444,7 +443,7 @@ void MainWindow::on_actionEmissive_Save_triggered()
 
 void MainWindow::on_actionDisplacement_Save_triggered()
 {
-    QString fileName = QFileDialog::getSaveFileName(this, tr("Save Displacement Texture"), "", tr("PNG (*.png)"));
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Сохранить Displacement Текстуру"), "", tr("PNG (*.png)"));
     if (!fileName.isEmpty())
     {
         ui->openGLWidget->saveTexture(fileName.toLatin1().data(), TextureMode::DISPLACEMENT);

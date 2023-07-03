@@ -76,7 +76,6 @@ private:
     TextureMode textureMode;
     bool wireframe;
     ViewMode viewMode;
-    // fbo and associated texture handles
     GLuint fbo;
     QOpenGLFramebufferObject *sourceFBO;
     QOpenGLFramebufferObject *targetFBO;

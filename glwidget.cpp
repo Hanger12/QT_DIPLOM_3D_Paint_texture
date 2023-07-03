@@ -438,6 +438,11 @@ void GLwidget::initshaider()
         std::cout<<"ERROR::/Render.frag"<<std::endl;
         close();
     }
+    if(!m_programRender.link())
+    {
+        std::cout<<"ERROR:Render"<<std::endl;
+        close();
+    }
     if(!m_programBLIT.addShaderFromSourceFile(QOpenGLShader::Vertex,":/blit.vert"))
     {
         std::cout<<"ERROR::/blit.vert"<<std::endl;
@@ -451,11 +456,6 @@ void GLwidget::initshaider()
     if(!m_programBLIT.link())
     {
         std::cout<<"ERROR:blit"<<std::endl;
-        close();
-    }
-    if(!m_programRender.link())
-    {
-        std::cout<<"ERROR:Render"<<std::endl;
         close();
     }
     if(!m_program.link())
@@ -544,7 +544,9 @@ void GLwidget::paint()
     }
 
     // determine the amount of points to draw into the texture
-    unsigned int pointCount = std::ceil(std::sqrt(std::pow(mouseCoord.x() - prevMouseCoord.x(), 2) + std::pow(mouseCoord.y() - prevMouseCoord.y(), 2)));
+    unsigned int pointCount = std::ceil
+            (std::sqrt(std::pow(mouseCoord.x() - prevMouseCoord.x(), 2)
+                       + std::pow(mouseCoord.y() - prevMouseCoord.y(), 2)));
     //std::cout<<"PointCount="<<pointCount<<std::endl;
     QVector2D textureSize(paintTextureWidth, paintTextureHeight);
     QVector<QVector2D> coords;
@@ -593,7 +595,9 @@ void GLwidget::paint()
     {
         QMatrix4x4 transform;
         transform.translate(QVector3D(paintCoord*2.0 - QVector2D(1.0, 1.0), 0.0));
-        transform.scale(QVector3D((1.0 / static_cast<double>(paintTextureWidth)) * static_cast<int>(strokeWidth), (1.0 / static_cast<double>(paintTextureHeight)) * static_cast<int>(strokeWidth), 1.0));
+        transform.scale(QVector3D((1.0 / static_cast<double>(paintTextureWidth)) *
+                                  static_cast<int>(strokeWidth), (1.0 / static_cast<double>(paintTextureHeight)) *
+                                  static_cast<int>(strokeWidth), 1.0));
         m_programPaint.setUniformValue("uTransformation",transform);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
     }
